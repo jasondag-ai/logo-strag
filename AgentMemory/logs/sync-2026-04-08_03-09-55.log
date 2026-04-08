@@ -1,0 +1,42 @@
+[03:09:55] === AgentMemory Sync — 2026-04-08_03-09-55 ===
+[03:09:55] Memory root: /home/user/logo-strag/AgentMemory
+[03:09:55] Core dir: /home/user/logo-strag/AgentMemory/core
+[03:09:55] 
+[03:09:55] --- Structure Validation ---
+[03:09:55] OK: core/ exists
+[03:09:55] OK: scripts/ exists
+[03:09:55] OK: logs/ exists
+[03:09:55] 
+[03:09:55] --- Core File Validation ---
+[03:09:55] OK: USER.md (51 lines, 14 placeholders remaining)
+[03:09:55] OK: SYSTEM.md (63 lines, 16 placeholders remaining)
+[03:09:55] OK: BUSINESSES.md (92 lines, 38 placeholders remaining)
+[03:09:55] OK: AGENTS.md (91 lines, 41 placeholders remaining)
+[03:09:55] OK: PROJECTS.md (80 lines, 18 placeholders remaining)
+[03:09:55] OK: TOOLS.md (74 lines, 17 placeholders remaining)
+[03:09:55] OK: CONTACTS.md (62 lines, 22 placeholders remaining)
+[03:09:55] OK: WORKFLOWS.md (74 lines, 18 placeholders remaining)
+[03:09:55] OK: SOUL.md (83 lines, 12 placeholders remaining)
+[03:09:55] 
+[03:09:55] Core files found: 9 / 9
+[03:09:55] Total placeholders remaining: 196
+[03:09:55] 
+[03:09:55] --- Empty File Check ---
+[03:09:55] 
+[03:09:55] --- OpenClaw Sync Check ---
+[03:09:55] OpenClaw directory not found at /root/.openclaw (expected on local Mac)
+[03:09:55]   Skipping OpenClaw sync — run this script on your Mac to sync
+[03:09:55] 
+[03:09:55] --- Git Status ---
+[03:09:55] Uncommitted changes in core/: 1 files
+[03:09:55]   ?? core/
+[03:09:55] 
+[03:09:55] === Sync Summary ===
+[03:09:55] Files validated: 9 / 9
+[03:09:55] Placeholders remaining: 196
+[03:09:55] Log written to: /home/user/logo-strag/AgentMemory/logs/sync-2026-04-08_03-09-55.log
+[03:09:55] 
+[03:09:55] ACTION REQUIRED: 196 placeholder fields still need manual input.
+[03:09:55] Run: grep -rn '\[PLACEHOLDER' /home/user/logo-strag/AgentMemory/core/
+[03:09:55] 
+[03:09:55] === Sync complete ===
