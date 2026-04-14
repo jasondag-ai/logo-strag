@@ -1,0 +1,49 @@
+{
+  "program_name": "Canadian Heritage Sport Participation Fund",
+  "funder": "Department of Canadian Heritage",
+  "funder_type": "federal",
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "Amount not publicly confirmed. Program exists within Canadian Heritage funding portfolio but specific amounts not published.",
+  "amount_verified": false,
+  "intake_type": "annual",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "sport",
+    "youth",
+    "Indigenous",
+    "inclusion",
+    "recreation",
+    "community_development"
+  ],
+  "organization_types_eligible": [
+    "Non-profit organizations",
+    "Sport organizations",
+    "Community organizations focused on sport participation"
+  ],
+  "eligibility_criteria": [
+    "Must be a non-profit or sport organization in Canada",
+    "Project must increase sport participation for under-represented groups including Indigenous peoples",
+    "Must demonstrate measurable increase in sport participation outcomes",
+    "Must align with Canadian Sport Policy objectives"
+  ],
+  "exclusions": [
+    "High performance sport programs not focused on participation",
+    "For-profit organizations"
+  ],
+  "stackable": true,
+  "url": "https://www.canada.ca/en/canadian-heritage/services/funding.html",
+  "contact_email": "pch.info-info.pch@canada.ca",
+  "contact_phone": "1-866-811-0055",
+  "status": "verify_required",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.canada.ca/en/canadian-heritage/services/funding.html",
+  "notes": "PARTIAL DATA: Canadian Heritage funding portal confirmed. Sport Participation Fund listed in original PathGrant database but specific program page not confirmed — homepage URL used as placeholder. Verify whether this is a standalone program or a substream of the Sport Support Program (SSP). If it is an SSP substream it may already be covered by existing database records. Manual verification required before using in any client report. Status verify_required — will land in grants_unverified.json.",
+  "grant_id": "canadian_heritage_sport_participation_fund"
+}

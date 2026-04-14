@@ -1,0 +1,52 @@
+{
+  "program_name": "TD Bank Ready Commitment Community Giving",
+  "funder": "TD Bank Group / TD Ready Commitment",
+  "funder_type": "corporate",
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "Amount not publicly stated. Assessed case by case. TD does not publish standard grant amounts.",
+  "amount_verified": false,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "youth",
+    "education",
+    "financial_literacy",
+    "environmental",
+    "Indigenous",
+    "inclusion",
+    "community_development"
+  ],
+  "organization_types_eligible": [
+    "Registered charities in Canada",
+    "Non-profit organizations in communities where TD operates",
+    "Indigenous organizations and communities"
+  ],
+  "eligibility_criteria": [
+    "Must be a registered charity or non-profit organization in Canada",
+    "Must operate in a community where TD Bank has a presence",
+    "Project must align with TD Ready Commitment pillars: financial security, vibrant planet, connected communities, or better health",
+    "Must demonstrate measurable community impact with clear outcomes"
+  ],
+  "exclusions": [
+    "Individuals",
+    "Political organizations",
+    "Religious organizations for religious purposes",
+    "Organizations not in good standing"
+  ],
+  "stackable": null,
+  "url": "https://www.td.com/ca/en/about-td/ready-commitment/",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "verify_required",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.td.com/ca/en/about-td/ready-commitment/",
+  "notes": "PARTIAL DATA: TD Ready Commitment framework confirmed active. Specific grant application portal and eligibility details need verification from td.com community giving pages. Status set to verify_required — will land in grants_unverified.json. Amount unknown. Connected Communities and Better Health pillars most relevant for Emerge Academy. Requires manual verification of current application process before recommending to any client.",
+  "grant_id": "td_bank_ready_commitment_community_giving"
+}

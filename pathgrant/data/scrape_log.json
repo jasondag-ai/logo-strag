@@ -107,5 +107,26 @@
     "grant_id": "saskatchewan_mmiwg_plus_community_response_fund",
     "url_collision": true,
     "url_collision_with": "saskatchewan_first_nations_and_metis_community_partnership"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/employment-social-development/services/funding/canada-summer-jobs.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:59:26Z",
+    "success": true,
+    "grant_id": "canada_summer_jobs"
+  },
+  {
+    "source_url": "https://www.td.com/ca/en/about-td/ready-commitment/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:59:26Z",
+    "success": true,
+    "grant_id": "td_bank_ready_commitment_community_giving"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/canadian-heritage/services/funding.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:59:26Z",
+    "success": true,
+    "grant_id": "canadian_heritage_sport_participation_fund"
   }
 ]

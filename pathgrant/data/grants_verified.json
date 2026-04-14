@@ -479,5 +479,59 @@
     "validation_warnings": [
       "url_collision - multiple programs share this source URL, verify these are distinct programs"
     ]
+  },
+  {
+    "program_name": "Canada Summer Jobs",
+    "funder": "Employment and Social Development Canada (ESDC)",
+    "funder_type": "federal",
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Wage subsidy covering up to 100% of minimum wage for non-profit employers. Amount varies by position, hours, and weeks funded.",
+    "amount_verified": false,
+    "intake_type": "annual",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "youth",
+      "employment",
+      "education",
+      "nonprofit_capacity",
+      "Indigenous",
+      "community_development"
+    ],
+    "organization_types_eligible": [
+      "Non-profit organizations",
+      "Public sector employers",
+      "Small businesses with 50 or fewer full-time employees"
+    ],
+    "eligibility_criteria": [
+      "Must be a non-profit organization, public sector employer, or small business with 50 or fewer full-time employees",
+      "Must hire youth aged 15 to 30 years for summer positions",
+      "Positions must provide meaningful skills development for the youth employee",
+      "Non-profit employers eligible for up to 100% wage subsidy of provincial minimum wage"
+    ],
+    "exclusions": [
+      "Positions that displace existing workers",
+      "Positions that are primarily commission-based",
+      "Organizations that do not comply with applicable federal provincial and territorial legislation"
+    ],
+    "stackable": true,
+    "url": "https://www.canada.ca/en/employment-social-development/services/funding/canada-summer-jobs.html",
+    "contact_email": null,
+    "contact_phone": "1-800-935-5555",
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.canada.ca/en/employment-social-development/services/funding/canada-summer-jobs.html",
+    "notes": "Relevant for pre-launch orgs hiring summer youth staff — coaches, program assistants, admin. Non-profit gets 100% wage subsidy. Annual intake typically November to February for following summer. 2026 intake likely already closed — verify current cycle status before recommending. Stackable with program grants. Not a program grant but reduces operating costs significantly.",
+    "grant_id": "canada_summer_jobs",
+    "validation_warnings": [
+      "amount_unconfirmed - verify before using in client report",
+      "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
+    ]
   }
 ]
