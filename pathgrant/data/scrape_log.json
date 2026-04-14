@@ -142,5 +142,26 @@
     "timestamp": "2026-04-14T20:42:14Z",
     "success": true,
     "grant_id": "mitacs_accelerate"
+  },
+  {
+    "source_url": "https://www.masrc.com/resources",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T21:37:01Z",
+    "success": true,
+    "grant_id": "hockey_canada_foundation_assist_fund"
+  },
+  {
+    "source_url": "https://ised-isde.canada.ca/site/canada-digital-adoption-program/en",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T21:37:01Z",
+    "success": true,
+    "grant_id": "canada_digital_adoption_program_boost_your_business"
+  },
+  {
+    "source_url": "https://www.futurpreneur.ca/en/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T21:37:01Z",
+    "success": true,
+    "grant_id": "futurpreneur_canada_startup_financing_program"
   }
 ]

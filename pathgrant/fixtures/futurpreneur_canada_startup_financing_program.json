@@ -1,0 +1,51 @@
+{
+  "program_name": "Futurpreneur Canada Startup Financing Program",
+  "funder": "Futurpreneur Canada",
+  "funder_type": "federal",
+  "grant_type": "program_grant",
+  "is_repayable": true,
+  "amount_min": 20000,
+  "amount_max": 60000,
+  "amount_notes": "Up to $20,000 from Futurpreneur plus up to $40,000 from BDC. Combined max $60,000. THIS IS A LOAN — repayment required. Not a non-repayable grant.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": 4,
+  "decision_weeks_max": 8,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "entrepreneurship",
+    "small_business",
+    "youth",
+    "innovation",
+    "startup"
+  ],
+  "organization_types_eligible": [
+    "Canadian entrepreneurs aged 18 to 39",
+    "For-profit early stage businesses"
+  ],
+  "eligibility_criteria": [
+    "Entrepreneur must be 18 to 39 years of age",
+    "Must be Canadian citizen or permanent resident",
+    "Business must be for-profit and early stage",
+    "Must work with a Futurpreneur mentor",
+    "Business operating or launching within 12 months"
+  ],
+  "exclusions": [
+    "CRITICAL: Loan not a grant — repayment required",
+    "Entrepreneurs over age 39 not eligible",
+    "NFP and charitable organizations not eligible"
+  ],
+  "stackable": true,
+  "url": "https://www.futurpreneur.ca/en/get-financing/",
+  "contact_email": null,
+  "contact_phone": "1-800-464-2923",
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.futurpreneur.ca/en/",
+  "notes": "LOAN NOT GRANT. Will appear in FINANCING section only, never in program grant rankings. Not applicable to Emerge Academy. Relevant for Sacral Solutions if founders under 40.",
+  "grant_id": "futurpreneur_canada_startup_financing_program"
+}

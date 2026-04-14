@@ -1,0 +1,49 @@
+{
+  "program_name": "Hockey Canada Foundation Assist Fund",
+  "funder": "Hockey Canada Foundation",
+  "funder_type": "foundation",
+  "grant_type": "wage_subsidy",
+  "is_repayable": false,
+  "amount_min": null,
+  "amount_max": 500,
+  "amount_notes": "Up to $500 per player in registration fee subsidies. Approved applicants must be registered with a sanctioned Hockey Canada association.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "sport",
+    "youth",
+    "Indigenous",
+    "hockey",
+    "inclusion"
+  ],
+  "organization_types_eligible": [
+    "Canadian youth registered with a sanctioned Hockey Canada association",
+    "Hockey associations applying on behalf of youth members"
+  ],
+  "eligibility_criteria": [
+    "Must be registered with a sanctioned Hockey Canada association",
+    "Funding covers registration fee subsidies only",
+    "Individual youth or hockey association applying on behalf of members",
+    "Designed to help Canadian youth access hockey facing financial barriers"
+  ],
+  "exclusions": [
+    "Not a program operating grant — registration subsidies only",
+    "Does not fund coaching, facilities, or program operations"
+  ],
+  "stackable": true,
+  "url": "https://hockeycanada.ca/en/hockey-programs/foundation",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "verify_required",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.masrc.com/resources",
+  "notes": "PARTIAL DATA: $500 per player max — player subsidy not academy operating grant. Useful to reduce per-student costs for Emerge Academy but does not address core funding need. Status verify_required pending full program page review.",
+  "grant_id": "hockey_canada_foundation_assist_fund"
+}

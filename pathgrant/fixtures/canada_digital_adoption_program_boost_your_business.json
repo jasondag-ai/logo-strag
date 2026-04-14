@@ -1,0 +1,50 @@
+{
+  "program_name": "Canada Digital Adoption Program Boost Your Business Technology",
+  "funder": "Innovation Science and Economic Development Canada",
+  "funder_type": "federal",
+  "grant_type": "program_grant",
+  "is_repayable": false,
+  "amount_min": null,
+  "amount_max": 15000,
+  "amount_notes": "Up to $15,000 non-repayable grant plus access to 0% interest BDC loan up to $100,000. Grant portion only is non-repayable.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "technology",
+    "digital",
+    "innovation",
+    "small_business"
+  ],
+  "organization_types_eligible": [
+    "Canadian for-profit businesses with 1 or more employee",
+    "Businesses with minimum $500,000 annual revenue"
+  ],
+  "eligibility_criteria": [
+    "Must be a Canadian for-profit business",
+    "Must have at least 1 paid employee",
+    "Must have minimum $500,000 in annual revenue",
+    "Must adopt new digital technologies to improve operations",
+    "Must work with a registered CDAP digital advisor"
+  ],
+  "exclusions": [
+    "CRITICAL: For-profit businesses only — NFP not eligible",
+    "Businesses under $500,000 annual revenue not eligible",
+    "Pre-revenue and pre-launch businesses not eligible"
+  ],
+  "stackable": true,
+  "url": "https://ised-isde.canada.ca/site/canada-digital-adoption-program/en",
+  "contact_email": null,
+  "contact_phone": "1-800-328-6189",
+  "status": "verify_required",
+  "last_verified": "2026-04-14",
+  "source_url": "https://ised-isde.canada.ca/site/canada-digital-adoption-program/en",
+  "notes": "STATUS UNCERTAIN: CDAP announced as winding down in 2024 federal budget. Verify current program status before recommending. Not applicable to Emerge Academy NFP or pre-revenue OpsCo. Relevant for Sacral Solutions once revenue threshold met.",
+  "grant_id": "canada_digital_adoption_program_boost_your_business"
+}
