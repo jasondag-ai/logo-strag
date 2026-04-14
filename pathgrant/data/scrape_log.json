@@ -212,5 +212,26 @@
     "timestamp": "2026-04-14T23:02:48Z",
     "success": true,
     "grant_id": "saskatchewan_research_and_development_tax_credit"
+  },
+  {
+    "source_url": "https://www.tradecommissioner.gc.ca/en/our-solutions/funding-financing-international-business/canexport-smes/new-2026-2027.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T23:52:53Z",
+    "success": true,
+    "grant_id": "canexport_smes_program"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/pacific-economic-development/services/funding.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T23:52:53Z",
+    "success": true,
+    "grant_id": "pacifican_business_scale_up_and_productivity_program"
+  },
+  {
+    "source_url": "https://ised-isde.canada.ca/site/ised/en/programs-and-initiatives/women-entrepreneurship-strategy",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T23:52:53Z",
+    "success": true,
+    "grant_id": "women_entrepreneurship_strategy_gba_scoring_advantage"
   }
 ]

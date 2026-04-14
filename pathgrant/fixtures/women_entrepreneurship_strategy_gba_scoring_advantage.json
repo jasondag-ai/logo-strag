@@ -1,0 +1,54 @@
+{
+  "program_name": "Women Entrepreneurship Strategy GBA+ Scoring Advantage",
+  "funder": "Innovation Science and Economic Development Canada (ISED)",
+  "funder_type": "federal",
+  "grant_type": "program_grant",
+  "record_type": "scoring_note",
+  "is_repayable": false,
+  "amount_min": null,
+  "amount_max": 50000,
+  "amount_notes": "Not a direct grant program. Women Entrepreneurship Loan Fund delivers up to $50,000 loans through community delivery organizations — repayable. Direct WES grants are directed at NFP ecosystem organizations not individual businesses. Primary value is GBA+ scoring priority in mainstream programs.",
+  "amount_verified": false,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "women_entrepreneurship",
+    "technology",
+    "innovation",
+    "manufacturing",
+    "health_technology",
+    "small_business",
+    "export"
+  ],
+  "organization_types_eligible": [
+    "Women-owned businesses with 51% or greater female ownership and control",
+    "Canadian incorporated for-profit businesses with female majority ownership"
+  ],
+  "eligibility_criteria": [
+    "Business must be majority owned and controlled by women — minimum 51% female ownership",
+    "Must be Canadian incorporated business",
+    "WES Ecosystem Fund — for NFP ecosystem support organizations only, not individual businesses",
+    "Women Entrepreneurship Loan Fund — delivered through community organizations up to $50K repayable"
+  ],
+  "exclusions": [
+    "WES direct grants are for NFP ecosystem organizations not individual for-profit businesses",
+    "Women Entrepreneurship Loan Fund is repayable — not a non-repayable grant",
+    "Adele Hills ownership stake as female founder must be confirmed at 51%+ for eligibility"
+  ],
+  "stackable": true,
+  "url": "https://ised-isde.canada.ca/site/ised/en/programs-and-initiatives/women-entrepreneurship-strategy",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "verify_required",
+  "last_verified": "2026-04-14",
+  "source_url": "https://ised-isde.canada.ca/site/ised/en/programs-and-initiatives/women-entrepreneurship-strategy",
+  "notes": "IMPORTANT CLARIFICATION: WES is not a single direct grant program. Of 40+ programs marketed as WES-aligned, only approximately 6 are true non-repayable grants, and these are primarily directed at NFP ecosystem organizations. The real value for Sacral Solutions is GBA+ (Gender-Based Analysis Plus) scoring priority in mainstream federal programs including NRC IRAP and PacifiCan BSP — being women-owned gives documented scoring advantage in competitive assessments. Adele Hills is inventor and COO. Confirm her ownership percentage exceeds 51% before positioning Sacral as women-owned for any application. WeBC (Womens Enterprise Centre BC) provides advisory services and loan guarantees in BC — not direct grants but useful for application support.",
+  "grant_id": "women_entrepreneurship_strategy_gba_scoring_advantage",
+  "founder_age_restriction": null
+}

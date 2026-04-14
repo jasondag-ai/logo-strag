@@ -1051,5 +1051,69 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
     "record_type": "grant"
+  },
+  {
+    "program_name": "CanExport SMEs Program",
+    "funder": "Global Affairs Canada — Trade Commissioner Service",
+    "funder_type": "federal",
+    "grant_type": "program_grant",
+    "is_repayable": false,
+    "amount_min": 10000,
+    "amount_max": 50000,
+    "amount_notes": "Up to $50,000 non-repayable at 50% cost-share. Total project value must be between $20,000 and $100,000. Approximately $31M available 2026-27, $3.1M earmarked for US-targeted projects only.",
+    "amount_verified": true,
+    "intake_type": "annual",
+    "intake_open_date": "2026-02-04",
+    "intake_close_date": "2026-05-29",
+    "decision_weeks_min": 8,
+    "decision_weeks_max": 12,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "export",
+      "international_trade",
+      "technology",
+      "manufacturing",
+      "health_technology",
+      "innovation",
+      "small_business"
+    ],
+    "organization_types_eligible": [
+      "For-profit SMEs incorporated in Canada",
+      "Businesses with 3 or more full-time employees",
+      "Businesses with $300,000 to $100,000,000 in annual Canadian revenue"
+    ],
+    "eligibility_criteria": [
+      "Must be incorporated for-profit business in Canada",
+      "Minimum 3 full-time employees (increased from 1 FTE in 2025)",
+      "Annual Canadian revenue between $300,000 and $100M",
+      "Must be targeting a new international market where less than 10% of revenue currently generated",
+      "US and non-US market activities require separate applications",
+      "Must be able to pay costs upfront and claim reimbursement after approval",
+      "Project duration up to 12 months within a single fiscal year"
+    ],
+    "exclusions": [
+      "NFP organizations not eligible",
+      "Sole proprietors not eligible",
+      "Agricultural businesses must use AgriMarketing SME stream instead",
+      "Cannot target markets where more than 10% or $100K of revenue already generated in last 24 months",
+      "Sales representatives and operational consultants not eligible expenses",
+      "US and non-US applications must be separate — cannot combine in single application"
+    ],
+    "stackable": true,
+    "url": "https://www.tradecommissioner.gc.ca/en/our-solutions/funding-financing-international-business/canexport-smes.html",
+    "contact_email": null,
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.tradecommissioner.gc.ca/en/our-solutions/funding-financing-international-business/canexport-smes/new-2026-2027.html",
+    "time_sensitive": true,
+    "time_sensitive_note": "Deadline May 29 2026 at 12pm ET. Applications assessed rolling basis — early submission increases approval chances before budget exhausted. 36% approval rate on 4000+ applications annually.",
+    "notes": "2026-27 CHANGES: Revenue threshold increased from $100K to $300K, FTE minimum increased from 1 to 3. Sacral Solutions 2026 base revenue $723K clears revenue threshold. Confirm FTE count before applying. Stacks with BC Export Navigator and provincial export programs. US and Europe require separate applications. Sacral has US fleet market and Europe IP filing — two separate CanExport applications possible. 50% cost-share means Sacral must fund half the project costs upfront.",
+    "grant_id": "canexport_smes_program",
+    "founder_age_restriction": null,
+    "record_type": "grant",
+    "validation_warnings": []
   }
 ]
