@@ -162,6 +162,32 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
             f"is_repayable must be boolean, got {type(is_repayable).__name__}"
         )
 
+    # founder_age_restriction is optional. When set it must be an object
+    # with integer min_age / max_age. A non-null value ALWAYS surfaces a
+    # warning so the operator knows a manual eligibility check is required:
+    # client profiles rarely carry founder age, so this is a soft flag
+    # rather than a hard scorer penalty.
+    far = record.get("founder_age_restriction")
+    if far is not None:
+        if not isinstance(far, dict):
+            errors.append(
+                "founder_age_restriction must be null or an object "
+                "with integer min_age and max_age"
+            )
+        else:
+            min_age = far.get("min_age")
+            max_age = far.get("max_age")
+            if not isinstance(min_age, int) or not isinstance(max_age, int):
+                errors.append(
+                    "founder_age_restriction.min_age and max_age must both "
+                    "be integers"
+                )
+            else:
+                warnings.append(
+                    f"founder_age_restriction_set - founder must be "
+                    f"{min_age}-{max_age}, manual eligibility check required"
+                )
+
     # eligibility_criteria minimum count (RULE 2).
     criteria = record.get("eligibility_criteria")
     if criteria is not None:

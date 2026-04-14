@@ -45,7 +45,8 @@
       "amount_unconfirmed - verify before using in client report"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "TD Bank Ready Commitment Community Giving",
@@ -102,7 +103,8 @@
       "amount_unconfirmed - verify before using in client report"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Canadian Heritage Sport Participation Fund",
@@ -156,7 +158,8 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Hockey Canada Foundation Assist Fund",
@@ -206,7 +209,8 @@
     "source_url": "https://www.masrc.com/resources",
     "notes": "PARTIAL DATA: $500 per player max — player subsidy not academy operating grant. Useful to reduce per-student costs for Emerge Academy but does not address core funding need. Status verify_required pending full program page review.",
     "grant_id": "hockey_canada_foundation_assist_fund",
-    "validation_warnings": []
+    "validation_warnings": [],
+    "founder_age_restriction": null
   },
   {
     "program_name": "Canada Digital Adoption Program Boost Your Business Technology",
@@ -257,6 +261,7 @@
     "source_url": "https://ised-isde.canada.ca/site/canada-digital-adoption-program/en",
     "notes": "STATUS UNCERTAIN: CDAP announced as winding down in 2024 federal budget. Verify current program status before recommending. Not applicable to Emerge Academy NFP or pre-revenue OpsCo. Relevant for Sacral Solutions once revenue threshold met.",
     "grant_id": "canada_digital_adoption_program_boost_your_business",
-    "validation_warnings": []
+    "validation_warnings": [],
+    "founder_age_restriction": null
   }
 ]

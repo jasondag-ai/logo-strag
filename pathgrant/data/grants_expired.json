@@ -55,7 +55,8 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Sport Canada Community Sport for All Initiative",
@@ -112,6 +113,7 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   }
 ]

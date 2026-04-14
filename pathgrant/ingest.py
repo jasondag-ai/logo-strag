@@ -153,6 +153,8 @@ def ingest_grant(
         record["grant_type"] = "program_grant"
     if "is_repayable" not in record:
         record["is_repayable"] = False
+    if "founder_age_restriction" not in record:
+        record["founder_age_restriction"] = None
 
     # 2. Persist fixture payload.
     fixtures_dir.mkdir(parents=True, exist_ok=True)

@@ -55,7 +55,8 @@
       "amount_unconfirmed - verify before using in client report"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "UFA Foundation Rural Communities Grant",
@@ -114,7 +115,8 @@
     "grant_id": "ufa_foundation_rural_communities_grant",
     "validation_warnings": [],
     "grant_type": "capital_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Sask Sport Indigenous Community Sport Development Grant Program",
@@ -169,7 +171,8 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "RBC Foundation Community Investments Canada",
@@ -232,7 +235,8 @@
     "grant_id": "rbc_foundation_community_investments_canada",
     "validation_warnings": [],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Cameco Northern Saskatchewan Community Investment",
@@ -284,7 +288,8 @@
       "amount_unconfirmed - verify before using in client report"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Community Initiatives Fund of Saskatchewan Community Grant Program",
@@ -339,7 +344,8 @@
       "amount_unconfirmed - verify before using in client report"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Saskatchewan First Nations and Metis Community Partnership Projects",
@@ -393,7 +399,8 @@
     "time_sensitive": true,
     "time_sensitive_note": "Deadline 2026-05-31 is 47 days away (within 60-day window; current date 2026-04-14)",
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Saskatchewan First Nations and Metis Sponsorships",
@@ -446,7 +453,8 @@
       "url_collision - multiple programs share this source URL, verify these are distinct programs"
     ],
     "grant_type": "sponsorship",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Saskatchewan MMIWG Plus Community Response Fund",
@@ -496,7 +504,8 @@
       "url_collision - multiple programs share this source URL, verify these are distinct programs"
     ],
     "grant_type": "program_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Canada Summer Jobs",
@@ -552,7 +561,8 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
     "grant_type": "wage_subsidy",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "NRC Industrial Research Assistance Program Financial Assistance",
@@ -609,7 +619,8 @@
     "grant_id": "nrc_industrial_research_assistance_program_financial",
     "validation_warnings": [],
     "grant_type": "research_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Mitacs Accelerate",
@@ -668,7 +679,8 @@
     "grant_id": "mitacs_accelerate",
     "validation_warnings": [],
     "grant_type": "research_grant",
-    "is_repayable": false
+    "is_repayable": false,
+    "founder_age_restriction": null
   },
   {
     "program_name": "Futurpreneur Canada Startup Financing Program",
@@ -720,6 +732,12 @@
     "source_url": "https://www.futurpreneur.ca/en/",
     "notes": "LOAN NOT GRANT. Will appear in FINANCING section only, never in program grant rankings. Not applicable to Emerge Academy. Relevant for Sacral Solutions if founders under 40.",
     "grant_id": "futurpreneur_canada_startup_financing_program",
-    "validation_warnings": []
+    "validation_warnings": [
+      "founder_age_restriction_set - founder must be 18-39, manual eligibility check required"
+    ],
+    "founder_age_restriction": {
+      "min_age": 18,
+      "max_age": 39
+    }
   }
 ]
