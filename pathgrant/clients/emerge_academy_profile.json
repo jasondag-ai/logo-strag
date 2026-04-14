@@ -1,1 +1,34 @@
-{}
+{
+  "client_id": "emerge_academy",
+  "organization_name": "Emerge Academy",
+  "legal_structure": "NFP corporation",
+  "province": "SK",
+  "city": "Langenburg",
+  "sectors": [
+    "youth_development",
+    "sport",
+    "Indigenous",
+    "education",
+    "rural"
+  ],
+  "sport": "hockey",
+  "demographics_served": "male youth under 15",
+  "Indigenous_led": true,
+  "Indigenous_groups": ["Metis", "First Nations"],
+  "annual_budget": 1800000,
+  "year_1_funding_need": 1260000,
+  "stage": "pre_launch",
+  "launch_target": "September 2026",
+  "registered_charity": false,
+  "nfp_registered": true,
+  "key_differentiators": [
+    "Indigenous-led",
+    "Rural Saskatchewan location",
+    "Hockey integrated with accredited academics",
+    "Land-based learning curriculum",
+    "Serves underrepresented Indigenous youth",
+    "Boys under 15 demographic"
+  ],
+  "contact_name": "Cheryl Haas",
+  "contact_title": "Executive Director"
+}
