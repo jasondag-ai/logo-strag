@@ -220,11 +220,15 @@ def ingest_grant(
 
     # Stamp time_sensitive / time_sensitive_note for grants whose close date
     # is inside the 60-day window. Records that do not qualify are not
-    # stamped at all so the schema stays lean for the common case.
+    # stamped at all so the schema stays lean for the common case. When the
+    # operator supplied a non-empty time_sensitive_note in the input payload
+    # we preserve it -- the operator's domain-specific note is richer than
+    # the auto-generated countdown string.
     ts_flag, ts_note = _compute_time_sensitive(record)
     if ts_flag:
         persisted["time_sensitive"] = True
-        persisted["time_sensitive_note"] = ts_note
+        if not persisted.get("time_sensitive_note"):
+            persisted["time_sensitive_note"] = ts_note
 
     destination: str | None
     if dedupe_result.get("duplicate"):
