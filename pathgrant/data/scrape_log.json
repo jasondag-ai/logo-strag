@@ -198,5 +198,19 @@
     "timestamp": "2026-04-14T22:06:35Z",
     "success": true,
     "grant_id": "canadian_heritage_building_communities_through_arts_and"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/revenue-agency/services/scientific-research-experimental-development-tax-incentive-program/what-are-sred-tax-incentives.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T23:02:48Z",
+    "success": true,
+    "grant_id": "federal_scientific_research_and_experimental_development"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/revenue-agency/services/scientific-research-experimental-development-tax-incentive-program/provincial-territorial-research-development-tax-credits.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T23:02:48Z",
+    "success": true,
+    "grant_id": "saskatchewan_research_and_development_tax_credit"
   }
 ]

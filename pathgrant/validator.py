@@ -201,13 +201,25 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
             )
 
     # amount_verified must be backed by at least one numeric amount (RULE 3).
+    # Carve-out: tax_credit instruments are rate-based, not fixed-amount, so
+    # null amount_min / amount_max is legitimate for them. The rate structure
+    # must still be documented in amount_notes so nothing slips through
+    # with zero amount information.
     if record.get("amount_verified") is True:
         amt_min = record.get("amount_min")
         amt_max = record.get("amount_max")
         if amt_min is None and amt_max is None:
-            errors.append(
-                "amount_verified is true but amount_min and amount_max are both null"
-            )
+            if record.get("grant_type") == "tax_credit":
+                notes = record.get("amount_notes")
+                if not (isinstance(notes, str) and notes.strip()):
+                    errors.append(
+                        "grant_type tax_credit with amount_verified true "
+                        "requires amount_notes to document the rate structure"
+                    )
+            else:
+                errors.append(
+                    "amount_verified is true but amount_min and amount_max are both null"
+                )
 
     # Data-confidence warning: unverified amounts with ambiguous or missing
     # notes should be surfaced so the operator knows to follow up, but the

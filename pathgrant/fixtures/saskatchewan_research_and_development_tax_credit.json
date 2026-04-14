@@ -1,0 +1,57 @@
+{
+  "program_name": "Saskatchewan Research and Development Tax Credit",
+  "funder": "Government of Saskatchewan — administered by CRA",
+  "funder_type": "provincial",
+  "grant_type": "tax_credit",
+  "is_repayable": false,
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "CCPC rate: 10% refundable ITC on first $2M qualifying expenditures (2026-27 budget doubled limit from $1M to $2M effective March 18 2026). 10% non-refundable on excess. Combined refundable and non-refundable credits capped at $1M per year. Non-CCPC: 10% non-refundable only. Capital expenditures now eligible per 2026-27 budget.",
+  "amount_verified": true,
+  "intake_type": "annual",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "SK"
+  ],
+  "sectors": [
+    "technology",
+    "innovation",
+    "RD",
+    "manufacturing",
+    "digital",
+    "AI",
+    "life_sciences",
+    "cleantech"
+  ],
+  "organization_types_eligible": [
+    "Corporations with permanent establishment in Saskatchewan",
+    "Corporations that are members of partnerships in Saskatchewan",
+    "Canadian-controlled private corporations (CCPCs) for refundable credit"
+  ],
+  "eligibility_criteria": [
+    "Must have permanent establishment in Saskatchewan",
+    "Must conduct SR&ED activities in Saskatchewan eligible under federal program",
+    "CCPCs eligible for refundable credit on first $2M qualifying expenditures",
+    "Must file federal SR&ED claim (T661) within 18 months of tax year end",
+    "Claim Saskatchewan credit via Schedule 403 with T2 corporate return"
+  ],
+  "exclusions": [
+    "CRITICAL: Non-profit organizations and registered charities NOT eligible",
+    "Corporations without permanent establishment in Saskatchewan not eligible",
+    "Same activity exclusions as federal SR&ED apply",
+    "Saskatchewan R&D credit is considered government assistance and reduces federal SR&ED pool"
+  ],
+  "stackable": true,
+  "url": "https://www.saskatchewan.ca/business/taxes-licensing-and-reporting/tax-incentives/research-and-development-tax-credit",
+  "contact_email": null,
+  "contact_phone": "1-800-959-5525",
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.canada.ca/en/revenue-agency/services/scientific-research-experimental-development-tax-incentive-program/provincial-territorial-research-development-tax-credits.html",
+  "notes": "2026-27 BUDGET UPDATE (March 18 2026): Saskatchewan doubled the CCPC refundable expenditure limit from $1M to $2M. Most third-party guides still show the old $1M limit — use this verified record not third-party sources. Also new: capital expenditures (machinery, equipment, leasing costs) now eligible. Stacks directly with federal SR&ED — combined CCPC benefit: 35% federal + 10% provincial = 45% of eligible SK R&D costs. NOT applicable to Emerge Academy Foundation (NFP). Relevant for Emerge Academy Inc OpsCo and Sacral Solutions as for-profit entities if R&D activities exist.",
+  "grant_id": "saskatchewan_research_and_development_tax_credit",
+  "founder_age_restriction": null
+}
