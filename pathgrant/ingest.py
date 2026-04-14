@@ -134,41 +134,36 @@ def ingest_grant(
     # 4. Validate.
     validation = validate_grant(record)
 
-    # 5. Route to destination.
-    #
-    #    - duplicate                             -> skipped, no write
-    #    - validation failure                    -> grants_unverified.json
-    #      (with validation_errors / validation_warnings stamped on the copy)
-    #    - valid + status == "active"            -> grants_verified.json
-    #    - valid + status == "expired"           -> grants_expired.json
-    #    - valid + any other status (verify_required, unverified,
-    #      url_unverified) -> grants_unverified.json, because a record that
-    #      has not been confirmed active does not belong alongside clean,
-    #      confirmed grants (RULES 2 + 6).
+    # 5. Build the record that will be persisted. validation_warnings is a
+    #    durable field on every stored record (may be []); validation_errors
+    #    is only stamped on records that failed validation. The raw fixture
+    #    on disk is left alone so fixtures/*.json remains a faithful snapshot
+    #    of the operator's input payload.
     _ACTIVE = "active"
     _EXPIRED = "expired"
+
+    persisted = dict(record)
+    persisted["validation_warnings"] = list(validation["warnings"])
 
     destination: str | None
     if dedupe_result.get("duplicate"):
         destination = None
         outcome = "skipped_duplicate"
     elif not validation["valid"]:
-        failing_record = dict(record)
-        failing_record["validation_errors"] = validation["errors"]
-        failing_record["validation_warnings"] = validation["warnings"]
-        _append_json_array(unverified_path, failing_record)
+        persisted["validation_errors"] = validation["errors"]
+        _append_json_array(unverified_path, persisted)
         destination = "grants_unverified.json"
         outcome = "inserted"
     elif record.get("status") == _EXPIRED:
-        _append_json_array(expired_path, record)
+        _append_json_array(expired_path, persisted)
         destination = "grants_expired.json"
         outcome = "inserted"
     elif record.get("status") == _ACTIVE:
-        _append_json_array(verified_path, record)
+        _append_json_array(verified_path, persisted)
         destination = "grants_verified.json"
         outcome = "inserted"
     else:
-        _append_json_array(unverified_path, record)
+        _append_json_array(unverified_path, persisted)
         destination = "grants_unverified.json"
         outcome = "inserted_status_requires_verification"
 

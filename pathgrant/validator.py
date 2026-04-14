@@ -39,6 +39,21 @@ ALLOWED_STATUSES: frozenset[str] = frozenset(
 # Minimum number of eligibility criteria per RULE 2.
 MIN_ELIGIBILITY_CRITERIA = 3
 
+# Substrings (case-insensitive) in amount_notes that indicate the amount is
+# not actually confirmed even though the caller may have supplied some text.
+# Matched against `amount_notes.lower()`.
+AMOUNT_UNCONFIRMED_TRIGGERS: tuple[str, ...] = (
+    "tbd",
+    "not confirmed",
+    "not publicly stated",
+    "not disclosed",
+    "not stated",
+    "contact funder",
+    "unknown",
+    "varies",
+    "case by case",
+)
+
 # Single-segment paths that still look like a site root.
 _HOMEPAGE_PATH_SEGMENTS: frozenset[str] = frozenset(
     {
@@ -144,15 +159,16 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
     # record is still structurally valid.
     if record.get("amount_verified") is False:
         notes = record.get("amount_notes")
-        notes_lc = (notes or "").lower()
-        if (
-            notes is None
-            or "tbd" in notes_lc
-            or "not confirmed" in notes_lc
-        ):
+        if notes is None:
             warnings.append(
                 "amount_unconfirmed - verify before using in client report"
             )
+        else:
+            notes_lc = notes.lower()
+            if any(trigger in notes_lc for trigger in AMOUNT_UNCONFIRMED_TRIGGERS):
+                warnings.append(
+                    "amount_unconfirmed - verify before using in client report"
+                )
 
     # Deadline-unknown warning: a non-rolling intake with neither an open
     # nor a close date cannot be slotted into a Tier 1 / Tier 2 decision

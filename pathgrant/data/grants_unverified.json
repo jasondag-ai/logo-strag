@@ -40,6 +40,9 @@
     "last_verified": "2026-04-14",
     "source_url": "https://www.saskculture.ca/programs/funding-programs/our-grants",
     "notes": "PARTIAL DATA: April 23 2026 deadline confirmed from SaskCulture grants page listing. Amount and full eligibility criteria not yet confirmed from official program page. Validator will likely flag this — expected to land in grants_unverified.json. Requires manual verification of full program guidelines before using in any client report. Cultural focus may limit applicability for sports-focused clients.",
-    "grant_id": "saskculture_metis_cultural_development_fund"
+    "grant_id": "saskculture_metis_cultural_development_fund",
+    "validation_warnings": [
+      "amount_unconfirmed - verify before using in client report"
+    ]
   }
 ]
