@@ -1,0 +1,31 @@
+{
+  "client_id": "sacral_solutions",
+  "organization_name": "Sacral Solutions",
+  "stage": "pre_launch",
+  "province": "TBD",
+  "organization_profit_status": "for_profit",
+  "grant_applicant_entity": "for_profit_primary",
+  "sectors": ["health", "technology", "innovation"],
+  "status": "profile_incomplete",
+  "key_contacts": {
+    "founder": "Adele",
+    "advisor_equity": "Jason Dagenais \u2014 25% equity"
+  },
+  "disability_funding_flag": {
+    "status": "pending_confirmation",
+    "condition_noted": "Founder has thoracic outlet syndrome \u2014 documented compression of nerve and blood flow causing partial debilitation. Has undergone surgeries. Condition has materially impacted business progress.",
+    "funding_angle": "Entrepreneur with disability designation may unlock additional funding streams including disability-specific entrepreneurship grants and programs for entrepreneurs facing barriers",
+    "action_required": "Formal medical documentation from physician confirming diagnosis and functional impact required before applying to any disability-specific programs",
+    "programs_to_research_pending_confirmation": [
+      "Futurpreneur Canada \u2014 has Indigenous and disability-focused streams",
+      "BDC \u2014 programs for entrepreneurs facing barriers",
+      "ISED Women Entrepreneurship Strategy if applicable",
+      "Provincial disability entrepreneurship programs",
+      "ESDC Opportunities Fund for Persons with Disabilities",
+      "Rick Hansen Foundation programs if applicable",
+      "Local community foundations with accessibility mandates"
+    ],
+    "note": "Do not include disability funding streams in any Sacral Solutions report until medical documentation is confirmed. Flag this profile for review once documentation is received."
+  },
+  "profile_notes": "Profile incomplete. Sector, revenue, incorporation status, and full organizational details to be added. Disability funding angle to be activated pending physician confirmation. Do not run matcher until profile is completed."
+}
