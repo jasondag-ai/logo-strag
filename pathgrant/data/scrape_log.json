@@ -5,5 +5,26 @@
     "status_code": null,
     "success": false,
     "error": "ProxyError: HTTPSConnectionPool(host='ufafoundation.com', port=443): Max retries exceeded with url: /acf-programs-rc-grants/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/canadian-heritage/services/funding/sport-support/stream-two.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:07:27Z",
+    "success": true,
+    "grant_id": "sport_for_social_development_in_indigenous_communities_strea"
+  },
+  {
+    "source_url": "https://www.scotiabank.com/ca/en/about/responsibility-impact/scotiarise/funding-guidelines-application.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:07:27Z",
+    "success": true,
+    "grant_id": "scotiarise_community_investment_program"
+  },
+  {
+    "source_url": "https://ufafoundation.com/acf-programs-rc-grants/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:07:27Z",
+    "success": true,
+    "grant_id": "ufa_foundation_rural_communities_grant"
   }
 ]

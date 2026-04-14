@@ -1,1 +1,111 @@
-[]
+[
+  {
+    "program_name": "ScotiaRISE Community Investment Program",
+    "funder": "Scotiabank",
+    "funder_type": "corporate",
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Amount not publicly stated. Assessed case by case.",
+    "amount_verified": false,
+    "intake_type": "rolling",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": 12,
+    "decision_weeks_max": 16,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "education",
+      "employment",
+      "youth",
+      "economic_resilience",
+      "inclusion"
+    ],
+    "organization_types_eligible": [
+      "Registered charities in their jurisdiction",
+      "Non-profit organizations in their jurisdiction",
+      "Organizations operating in countries where Scotiabank does business",
+      "Organizations with a sustained record of achievement"
+    ],
+    "eligibility_criteria": [
+      "Must be a registered charity or non-profit organization",
+      "Must operate in a country where Scotiabank does business",
+      "Must have a sustained record of achievement with measurable impact",
+      "Programs must align with ScotiaRISE focus areas: education, newcomer support, or employment"
+    ],
+    "exclusions": [
+      "CRITICAL: Sports teams explicitly excluded unless funding is pursuant to a Scotiabank local support program",
+      "Individual pursuits",
+      "Private schools (fee-based)",
+      "Political organizations",
+      "Private foundations and corporate foundations",
+      "Religious organizations unless program is open to all regardless of faith"
+    ],
+    "stackable": null,
+    "url": "https://www.scotiabank.com/ca/en/about/responsibility-impact/scotiarise/funding-guidelines-application.html",
+    "contact_email": "community@scotiabank.com",
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.scotiabank.com/ca/en/about/responsibility-impact/scotiarise/funding-guidelines-application.html",
+    "notes": "ELIGIBILITY RISK: Sports teams explicitly excluded per official guidelines. Emerge Academy as a hockey academy may be classified as a sports team. Do not include in Tier 1 or 2 without confirming applicant is applying as an education/employment NFP not as a sports team. Apply via https://forms.benevity.org/5c489b18-f9e5-4d28-a615-023850c25354",
+    "grant_id": "scotiarise_community_investment_program"
+  },
+  {
+    "program_name": "UFA Foundation Rural Communities Grant",
+    "funder": "UFA Agricultural Community Foundation",
+    "funder_type": "foundation",
+    "amount_min": 10000,
+    "amount_max": 40000,
+    "amount_notes": "Total pool is $100,000 per annual cycle across all recipients. 2025 program was $10K-$40K per recipient.",
+    "amount_verified": true,
+    "intake_type": "annual",
+    "intake_open_date": "2026-06-13",
+    "intake_close_date": "2026-08-31",
+    "decision_weeks_min": 6,
+    "decision_weeks_max": 8,
+    "provinces_eligible": [
+      "AB",
+      "SK",
+      "BC"
+    ],
+    "sectors": [
+      "rural",
+      "education",
+      "recreation",
+      "culture",
+      "agriculture",
+      "capital_projects"
+    ],
+    "organization_types_eligible": [
+      "Registered charities with valid CRA registration number",
+      "Non-profit entities under Non-profit Corporations Act Saskatchewan",
+      "Community service-oriented cooperatives",
+      "Canadian-based NFP partnered with a Canadian municipal government"
+    ],
+    "eligibility_criteria": [
+      "Must be located within 200km of a UFA location",
+      "Project must be a capital project (physical assets only — buildings, facilities, equipment)",
+      "Project must enrich education, recreation or culture in an agricultural community",
+      "Project must be available and accessible for community use",
+      "Project must be completed within 2 years of receiving the grant"
+    ],
+    "exclusions": [
+      "CRITICAL: Operating costs and salaries not eligible — capital projects only",
+      "Religious or politically-affiliated organizations",
+      "Organizations that do not inclusively benefit community members",
+      "Projects duplicative of existing services in the community",
+      "Communities awarded significant UFA funding in the previous 5 years may be excluded"
+    ],
+    "stackable": true,
+    "url": "https://ufafoundation.com/acf-programs-rc-grants/",
+    "contact_email": "info@ufafoundation.com",
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://ufafoundation.com/acf-programs-rc-grants/",
+    "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Program funds capital projects only not operating programs. Pre-launch academy seeking operating funds likely ineligible. Must confirm Langenburg SK is within 200km of a UFA location before recommending. Annual intake June 13 to Aug 31. Website returned 403 during live scrape — verified via cached sources and official UFA press releases.",
+    "grant_id": "ufa_foundation_rural_communities_grant"
+  }
+]

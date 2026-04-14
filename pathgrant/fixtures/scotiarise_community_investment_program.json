@@ -1,0 +1,53 @@
+{
+  "program_name": "ScotiaRISE Community Investment Program",
+  "funder": "Scotiabank",
+  "funder_type": "corporate",
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "Amount not publicly stated. Assessed case by case.",
+  "amount_verified": false,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": 12,
+  "decision_weeks_max": 16,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "education",
+    "employment",
+    "youth",
+    "economic_resilience",
+    "inclusion"
+  ],
+  "organization_types_eligible": [
+    "Registered charities in their jurisdiction",
+    "Non-profit organizations in their jurisdiction",
+    "Organizations operating in countries where Scotiabank does business",
+    "Organizations with a sustained record of achievement"
+  ],
+  "eligibility_criteria": [
+    "Must be a registered charity or non-profit organization",
+    "Must operate in a country where Scotiabank does business",
+    "Must have a sustained record of achievement with measurable impact",
+    "Programs must align with ScotiaRISE focus areas: education, newcomer support, or employment"
+  ],
+  "exclusions": [
+    "CRITICAL: Sports teams explicitly excluded unless funding is pursuant to a Scotiabank local support program",
+    "Individual pursuits",
+    "Private schools (fee-based)",
+    "Political organizations",
+    "Private foundations and corporate foundations",
+    "Religious organizations unless program is open to all regardless of faith"
+  ],
+  "stackable": null,
+  "url": "https://www.scotiabank.com/ca/en/about/responsibility-impact/scotiarise/funding-guidelines-application.html",
+  "contact_email": "community@scotiabank.com",
+  "contact_phone": null,
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.scotiabank.com/ca/en/about/responsibility-impact/scotiarise/funding-guidelines-application.html",
+  "notes": "ELIGIBILITY RISK: Sports teams explicitly excluded per official guidelines. Emerge Academy as a hockey academy may be classified as a sports team. Do not include in Tier 1 or 2 without confirming applicant is applying as an education/employment NFP not as a sports team. Apply via https://forms.benevity.org/5c489b18-f9e5-4d28-a615-023850c25354",
+  "grant_id": "scotiarise_community_investment_program"
+}

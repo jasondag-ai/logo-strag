@@ -1,0 +1,56 @@
+{
+  "program_name": "UFA Foundation Rural Communities Grant",
+  "funder": "UFA Agricultural Community Foundation",
+  "funder_type": "foundation",
+  "amount_min": 10000,
+  "amount_max": 40000,
+  "amount_notes": "Total pool is $100,000 per annual cycle across all recipients. 2025 program was $10K-$40K per recipient.",
+  "amount_verified": true,
+  "intake_type": "annual",
+  "intake_open_date": "2026-06-13",
+  "intake_close_date": "2026-08-31",
+  "decision_weeks_min": 6,
+  "decision_weeks_max": 8,
+  "provinces_eligible": [
+    "AB",
+    "SK",
+    "BC"
+  ],
+  "sectors": [
+    "rural",
+    "education",
+    "recreation",
+    "culture",
+    "agriculture",
+    "capital_projects"
+  ],
+  "organization_types_eligible": [
+    "Registered charities with valid CRA registration number",
+    "Non-profit entities under Non-profit Corporations Act Saskatchewan",
+    "Community service-oriented cooperatives",
+    "Canadian-based NFP partnered with a Canadian municipal government"
+  ],
+  "eligibility_criteria": [
+    "Must be located within 200km of a UFA location",
+    "Project must be a capital project (physical assets only — buildings, facilities, equipment)",
+    "Project must enrich education, recreation or culture in an agricultural community",
+    "Project must be available and accessible for community use",
+    "Project must be completed within 2 years of receiving the grant"
+  ],
+  "exclusions": [
+    "CRITICAL: Operating costs and salaries not eligible — capital projects only",
+    "Religious or politically-affiliated organizations",
+    "Organizations that do not inclusively benefit community members",
+    "Projects duplicative of existing services in the community",
+    "Communities awarded significant UFA funding in the previous 5 years may be excluded"
+  ],
+  "stackable": true,
+  "url": "https://ufafoundation.com/acf-programs-rc-grants/",
+  "contact_email": "info@ufafoundation.com",
+  "contact_phone": null,
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://ufafoundation.com/acf-programs-rc-grants/",
+  "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Program funds capital projects only not operating programs. Pre-launch academy seeking operating funds likely ineligible. Must confirm Langenburg SK is within 200km of a UFA location before recommending. Annual intake June 13 to Aug 31. Website returned 403 during live scrape — verified via cached sources and official UFA press releases.",
+  "grant_id": "ufa_foundation_rural_communities_grant"
+}
