@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "url": "https://ufafoundation.com/acf-programs-rc-grants/",
+    "timestamp": "2026-04-14T18:53:25Z",
+    "status_code": null,
+    "success": false,
+    "error": "ProxyError: HTTPSConnectionPool(host='ufafoundation.com', port=443): Max retries exceeded with url: /acf-programs-rc-grants/ (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+  }
+]
