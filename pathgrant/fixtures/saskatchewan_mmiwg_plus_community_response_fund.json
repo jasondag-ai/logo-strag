@@ -1,0 +1,45 @@
+{
+  "program_name": "Saskatchewan MMIWG Plus Community Response Fund",
+  "funder": "Government of Saskatchewan and Women and Gender Equality Canada",
+  "funder_type": "provincial",
+  "amount_min": null,
+  "amount_max": 40000,
+  "amount_notes": "Up to $40,000 per project. Total pool $800,000. Half funded by Women and Gender Equality Canada.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": "2026-04-02",
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "SK"
+  ],
+  "sectors": [
+    "Indigenous",
+    "women",
+    "safety",
+    "community_development",
+    "MMIWG"
+  ],
+  "organization_types_eligible": [
+    "Organizations serving Indigenous women, girls, Two-Spirit+ people in Saskatchewan",
+    "Community organizations focused on MMIWG awareness and response"
+  ],
+  "eligibility_criteria": [
+    "Projects must focus on awareness, safety and empowerment for Indigenous women, girls, Two-Spirit+ people",
+    "Must serve families and communities of MMIWG+ in Saskatchewan",
+    "Must align with MMIWG+ awareness or community response mandate"
+  ],
+  "exclusions": [
+    "DOES NOT APPLY to Emerge Academy: Program exclusively serves Indigenous women, girls, and Two-Spirit+ people. Emerge Academy serves male youth under 15."
+  ],
+  "stackable": true,
+  "url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+  "contact_email": "fnmr@gov.sk.ca",
+  "contact_phone": "306-787-4081",
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+  "notes": "NOT APPLICABLE to Emerge Academy — explicitly serves Indigenous women, girls, Two-Spirit+ people only. Emerge Academy is male youth U15. Include in database for other clients but exclude from Emerge Academy matching. Rolling intake until funding allotted.",
+  "grant_id": "saskatchewan_mmiwg_plus_community_response_fund"
+}

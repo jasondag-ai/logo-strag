@@ -20,9 +20,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
+
+
+# A record whose intake_close_date is at most this many days out is stamped
+# with time_sensitive=True so it can be slotted into time-critical outreach
+# without a manual date check.
+TIME_SENSITIVE_WINDOW_DAYS = 60
 
 
 # Make sibling modules (validator.py, deduplicator.py) importable regardless
@@ -44,6 +50,38 @@ DEFAULT_SCRAPE_LOG_PATH = _PATHGRANT_ROOT / "data" / "scrape_log.json"
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _compute_time_sensitive(
+    record: dict[str, Any],
+    today: date | None = None,
+    window_days: int = TIME_SENSITIVE_WINDOW_DAYS,
+) -> tuple[bool, str | None]:
+    """Return (flag, note) based on intake_close_date.
+
+    A record is time-sensitive when its intake_close_date is a parseable
+    ISO date between today and `window_days` days in the future, inclusive.
+    Rolling intakes (null close_date), already-passed close dates, and
+    malformed close dates are all treated as not time-sensitive.
+    """
+    if today is None:
+        today = datetime.now(timezone.utc).date()
+    close_date_str = record.get("intake_close_date")
+    if not isinstance(close_date_str, str) or not close_date_str:
+        return (False, None)
+    try:
+        close_date = datetime.strptime(close_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return (False, None)
+    days_until = (close_date - today).days
+    if 0 <= days_until <= window_days:
+        note = (
+            f"Deadline {close_date_str} is {days_until} days away "
+            f"(within {window_days}-day window; current date "
+            f"{today.isoformat()})"
+        )
+        return (True, note)
+    return (False, None)
 
 
 def _load_json_array(path: Path) -> list[dict[str, Any]]:
@@ -145,6 +183,14 @@ def ingest_grant(
     persisted = dict(record)
     persisted["validation_warnings"] = list(validation["warnings"])
 
+    # Stamp time_sensitive / time_sensitive_note for grants whose close date
+    # is inside the 60-day window. Records that do not qualify are not
+    # stamped at all so the schema stays lean for the common case.
+    ts_flag, ts_note = _compute_time_sensitive(record)
+    if ts_flag:
+        persisted["time_sensitive"] = True
+        persisted["time_sensitive_note"] = ts_note
+
     destination: str | None
     if dedupe_result.get("duplicate"):
         destination = None
@@ -192,6 +238,8 @@ def ingest_grant(
         "warnings": validation["warnings"],
         "duplicate": dedupe_result,
         "fixture_path": rel_fixture,
+        "time_sensitive": persisted.get("time_sensitive", False),
+        "time_sensitive_note": persisted.get("time_sensitive_note"),
     }
 
 
@@ -208,6 +256,9 @@ def _format_report(result: dict[str, Any], index: int) -> str:
         f"  outcome         : {result['outcome']}",
         f"  fixture         : {result['fixture_path']}",
     ]
+    if result.get("time_sensitive"):
+        lines.append(f"  time_sensitive  : True")
+        lines.append(f"    note          : {result.get('time_sensitive_note')}")
     return "\n".join(lines)
 
 
