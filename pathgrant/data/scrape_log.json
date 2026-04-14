@@ -128,5 +128,19 @@
     "timestamp": "2026-04-14T19:59:26Z",
     "success": true,
     "grant_id": "canadian_heritage_sport_participation_fund"
+  },
+  {
+    "source_url": "https://nrc.canada.ca/en/support-technology-innovation",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T20:42:14Z",
+    "success": true,
+    "grant_id": "nrc_industrial_research_assistance_program_financial"
+  },
+  {
+    "source_url": "https://www.mitacs.ca/our-programs/accelerate/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T20:42:14Z",
+    "success": true,
+    "grant_id": "mitacs_accelerate"
   }
 ]

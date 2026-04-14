@@ -1,0 +1,56 @@
+{
+  "program_name": "Mitacs Accelerate",
+  "funder": "Mitacs (federally funded nonprofit)",
+  "funder_type": "federal",
+  "amount_min": 7500,
+  "amount_max": 15000,
+  "amount_notes": "Up to $15,000 per 4-6 month internship unit. Business contributes minimum $7,500, Mitacs matches with $7,500. Cluster stream available for 6+ internship units from 3+ interns for additional funding. Limited funding available in Alberta for 2025-2026 fiscal year.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": 6,
+  "decision_weeks_max": 8,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "technology",
+    "innovation",
+    "RD",
+    "AI",
+    "digital",
+    "manufacturing",
+    "life_sciences",
+    "cleantech",
+    "commercialization",
+    "education"
+  ],
+  "organization_types_eligible": [
+    "For-profit corporations incorporated in Canada",
+    "Not-for-profit corporations in Canada (must demonstrate economic or productivity orientation)",
+    "Municipalities and hospitals in Canada"
+  ],
+  "eligibility_criteria": [
+    "Must be incorporated for-profit or NFP corporation, municipality, or hospital operating in Canada",
+    "Project must involve collaboration with an eligible Canadian academic institution and support R&D objectives",
+    "NFP organizations must demonstrate economic or productivity orientation in project",
+    "Must contribute minimum $7,500 per internship unit as partner contribution",
+    "Intern must be registered student, postdoc, or recent graduate within 2 years at a Canadian academic institution"
+  ],
+  "exclusions": [
+    "Mitacs funds cannot be matched by any other federal or provincial agency",
+    "Routine development without research component does not qualify",
+    "Alberta and Saskatchewan have limited funding available for 2025-2026 fiscal year — confirm availability with Mitacs advisor before applying",
+    "Interns may not participate in more than one internship simultaneously"
+  ],
+  "stackable": false,
+  "url": "https://www.mitacs.ca/our-programs/accelerate/",
+  "contact_email": "accelerate@mitacs.ca",
+  "contact_phone": null,
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.mitacs.ca/our-programs/accelerate/",
+  "notes": "IMPORTANT FOR SK CLIENTS: Limited funding available in Saskatchewan for 2025-2026 fiscal year. Confirm availability with local Mitacs advisor before recommending. Rolling intake, 6-8 week review. NFPs eligible if project demonstrates economic or productivity orientation. Indigenous Pathways initiative cap increased from 12 to 30 internship units per submission year as of December 15 2025 — relevant for Indigenous-led organizations. Requires academic institution partner — client must identify a university or college collaborator before applying. Good fit for Sacral Solutions if they have an R&D component.",
+  "grant_id": "mitacs_accelerate"
+}

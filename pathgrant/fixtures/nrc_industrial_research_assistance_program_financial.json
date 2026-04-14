@@ -1,0 +1,54 @@
+{
+  "program_name": "NRC Industrial Research Assistance Program Financial Assistance",
+  "funder": "National Research Council Canada (NRC IRAP)",
+  "funder_type": "federal",
+  "amount_min": 75000,
+  "amount_max": 10000000,
+  "amount_notes": "First-time applicants typically receive $75,000-$200,000. Covers up to 80% of eligible internal salary costs and up to 50% of subcontractor costs. Larger projects up to $10M. $414M annual budget. 3,362 firms funded yearly.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": 4,
+  "decision_weeks_max": 13,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "technology",
+    "innovation",
+    "RD",
+    "manufacturing",
+    "digital",
+    "AI",
+    "cleantech",
+    "life_sciences",
+    "commercialization"
+  ],
+  "organization_types_eligible": [
+    "Incorporated for-profit Canadian SME with 500 or fewer full-time equivalent employees",
+    "Must be profit-oriented and technology-driven"
+  ],
+  "eligibility_criteria": [
+    "Must be incorporated for-profit Canadian SME with 500 or fewer full-time employees",
+    "Must be engaged in development and commercialization of innovative technology-driven products, services or processes",
+    "Project must involve technological uncertainty — routine development does not qualify",
+    "Must have been in operation minimum 12 months prior to application",
+    "Must demonstrate clear path to commercialization with viable business plan"
+  ],
+  "exclusions": [
+    "CRITICAL: Non-profit organizations not eligible for standard IRAP Financial Assistance",
+    "Routine software development without technological uncertainty",
+    "Organizations with more than 500 full-time employees",
+    "Non-Canadian incorporated companies as primary applicant"
+  ],
+  "stackable": true,
+  "url": "https://nrc.canada.ca/en/support-technology-innovation/financial-support-technology-innovation",
+  "contact_email": "info@nrc-cnrc.gc.ca",
+  "contact_phone": "1-877-994-4727",
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://nrc.canada.ca/en/support-technology-innovation",
+  "notes": "RELATIONSHIP-BASED program — approval depends heavily on Industrial Technology Advisor (ITA) relationship, not a scored competition. First step is calling 1-877-994-4727 to be assessed for ITA assignment. Stackable with SR&ED tax credits. NOT applicable to non-profits (Emerge Academy excluded). Highly relevant for Sacral Solutions and any for-profit tech client. AI Assist stream ($100M over 5 years) and DI Assist stream ($244.2M launched January 2026) are active sub-programs for AI and defence/dual-use tech respectively. Program transitioning to Canada Innovation Corporation by 2026-27 — monitor for structural changes.",
+  "grant_id": "nrc_industrial_research_assistance_program_financial"
+}
