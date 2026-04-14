@@ -135,6 +135,19 @@ def ingest_grant(
     validation = validate_grant(record)
 
     # 5. Route to destination.
+    #
+    #    - duplicate                             -> skipped, no write
+    #    - validation failure                    -> grants_unverified.json
+    #      (with validation_errors / validation_warnings stamped on the copy)
+    #    - valid + status == "active"            -> grants_verified.json
+    #    - valid + status == "expired"           -> grants_expired.json
+    #    - valid + any other status (verify_required, unverified,
+    #      url_unverified) -> grants_unverified.json, because a record that
+    #      has not been confirmed active does not belong alongside clean,
+    #      confirmed grants (RULES 2 + 6).
+    _ACTIVE = "active"
+    _EXPIRED = "expired"
+
     destination: str | None
     if dedupe_result.get("duplicate"):
         destination = None
@@ -146,14 +159,18 @@ def ingest_grant(
         _append_json_array(unverified_path, failing_record)
         destination = "grants_unverified.json"
         outcome = "inserted"
-    elif record.get("status") == "expired":
+    elif record.get("status") == _EXPIRED:
         _append_json_array(expired_path, record)
         destination = "grants_expired.json"
         outcome = "inserted"
-    else:
+    elif record.get("status") == _ACTIVE:
         _append_json_array(verified_path, record)
         destination = "grants_verified.json"
         outcome = "inserted"
+    else:
+        _append_json_array(unverified_path, record)
+        destination = "grants_unverified.json"
+        outcome = "inserted_status_requires_verification"
 
     # 6. Audit log entry (fixture-mode schema).
     log_entry = {

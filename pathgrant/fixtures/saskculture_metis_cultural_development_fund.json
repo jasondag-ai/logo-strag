@@ -1,0 +1,43 @@
+{
+  "program_name": "SaskCulture Metis Cultural Development Fund",
+  "funder": "SaskCulture / Sask Lotteries Trust Fund for Sport Culture and Recreation",
+  "funder_type": "provincial",
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "Amount not confirmed from official source. TBD.",
+  "amount_verified": false,
+  "intake_type": "annual",
+  "intake_open_date": null,
+  "intake_close_date": "2026-04-23",
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "SK"
+  ],
+  "sectors": [
+    "Indigenous",
+    "culture",
+    "Metis",
+    "arts",
+    "community_development"
+  ],
+  "organization_types_eligible": [
+    "Saskatchewan nonprofit cultural organizations",
+    "Metis organizations and communities"
+  ],
+  "eligibility_criteria": [
+    "Must be a Saskatchewan nonprofit organization",
+    "Must serve Metis cultural development in Saskatchewan",
+    "Project must have cultural development focus"
+  ],
+  "exclusions": [],
+  "stackable": null,
+  "url": "https://www.saskculture.ca/programs/funding-programs/our-grants",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "verify_required",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.saskculture.ca/programs/funding-programs/our-grants",
+  "notes": "PARTIAL DATA: April 23 2026 deadline confirmed from SaskCulture grants page listing. Amount and full eligibility criteria not yet confirmed from official program page. Validator will likely flag this — expected to land in grants_unverified.json. Requires manual verification of full program guidelines before using in any client report. Cultural focus may limit applicability for sports-focused clients.",
+  "grant_id": "saskculture_metis_cultural_development_fund"
+}

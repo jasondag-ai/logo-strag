@@ -26,5 +26,26 @@
     "timestamp": "2026-04-14T19:07:27Z",
     "success": true,
     "grant_id": "ufa_foundation_rural_communities_grant"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/canadian-heritage/services/funding/sport-support/community-sport-initiative.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:23:38Z",
+    "success": true,
+    "grant_id": "sport_canada_community_sport_for_all_initiative"
+  },
+  {
+    "source_url": "https://sasksport.ca/funding-opportunities/funding-and-grants/indigenous-sport-community-grant/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:23:38Z",
+    "success": true,
+    "grant_id": "sask_sport_indigenous_community_sport_development_grant"
+  },
+  {
+    "source_url": "https://www.saskculture.ca/programs/funding-programs/our-grants",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:23:38Z",
+    "success": true,
+    "grant_id": "saskculture_metis_cultural_development_fund"
   }
 ]

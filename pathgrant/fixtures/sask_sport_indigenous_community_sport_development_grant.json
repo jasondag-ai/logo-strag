@@ -1,0 +1,50 @@
+{
+  "program_name": "Sask Sport Indigenous Community Sport Development Grant Program",
+  "funder": "Sask Sport Inc. / Sask Lotteries Trust Fund for Sport Culture and Recreation",
+  "funder_type": "provincial",
+  "amount_min": 1000,
+  "amount_max": 5000,
+  "amount_notes": "Grants range $1,000-$5,000 per initiative annually. Maximum $25,000 total for organizations working across multiple communities.",
+  "amount_verified": true,
+  "intake_type": "annual",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "SK"
+  ],
+  "sectors": [
+    "sport",
+    "Indigenous",
+    "youth",
+    "rural",
+    "recreation",
+    "community_development"
+  ],
+  "organization_types_eligible": [
+    "Organizations serving First Nations and Metis populations",
+    "Incorporated under provincial nonprofit legislation",
+    "Minimum one year of operation required"
+  ],
+  "eligibility_criteria": [
+    "Must serve First Nations or Metis populations in Saskatchewan",
+    "Must be incorporated under provincial nonprofit legislation with at least one year of operation",
+    "Must serve Indigenous youth in urban, rural, on-reserve, isolated or northern Saskatchewan communities",
+    "Application must include letter of support from a recognized community leader",
+    "Must outline sustainability plan for programming beyond the funding cycle"
+  ],
+  "exclusions": [
+    "Organizations without at least one year of operation not eligible",
+    "Projects without a community leader letter of support not eligible"
+  ],
+  "stackable": true,
+  "url": "https://sasksport.ca/funding-opportunities/funding-and-grants/indigenous-sport-community-grant/",
+  "contact_email": "gmathiason@sasksport.ca",
+  "contact_phone": "306-220-6699",
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://sasksport.ca/funding-opportunities/funding-and-grants/indigenous-sport-community-grant/",
+  "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Minimum one year of operation required. Emerge Academy is pre-launch. May not qualify until after first year of operations. Saskatchewan-specific. Highly relevant sector alignment. Contact Garett Mathiason at Sask Sport to confirm pre-launch eligibility. Amount is modest ($1K-$5K) but stackable and SK-specific.",
+  "grant_id": "sask_sport_indigenous_community_sport_development_grant"
+}
