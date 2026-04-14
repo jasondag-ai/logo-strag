@@ -1,31 +1,121 @@
 {
   "client_id": "sacral_solutions",
   "organization_name": "Sacral Solutions",
-  "stage": "pre_launch",
-  "province": "TBD",
+  "product_name": "Spinaline",
+  "product_description": "First full-spine posture correction seat. Medical endorsed, custom fit, clinically backed. Class I non-invasive non-powered orthopedic device. Patent pending Canada and USA.",
+  "website": "https://www.sacralsolutions.com",
+  "product_website": "https://www.spinaline.ca",
+  "incorporated": true,
+  "incorporation_year": 2018,
+  "stage": "early_revenue",
+  "province": "BC",
   "organization_profit_status": "for_profit",
   "grant_applicant_entity": "for_profit_primary",
-  "sectors": ["health", "technology", "innovation"],
-  "status": "profile_incomplete",
-  "key_contacts": {
-    "founder": "Adele",
-    "advisor_equity": "Jason Dagenais \u2014 25% equity"
+  "status": "active",
+  "sectors": [
+    "health_technology",
+    "medical_device",
+    "ergonomics",
+    "wellness",
+    "manufacturing",
+    "innovation",
+    "RD"
+  ],
+  "team": {
+    "founder_coo_inventor": "Adele Hills",
+    "ceo": "Jason Dagenais P.Eng.",
+    "eir": "Don Freschi \u2014 CEO Fenix Advanced Materials, former Executive Director KAST",
+    "board_advisor": "Dr. Alex Chan \u2014 UBC Orthopaedic Surgeon, PhD Neurosciences"
   },
+  "founder_profile": {
+    "name": "Adele Hills",
+    "role": "Founder, COO, Inventor",
+    "background": "10+ years posture rehab and wellness specialist. Pioneered ergo clinical research. 2017-2021 worked with professors of Biomedical and Mechanical Engineering.",
+    "founding_story": "13 years of surgeries and physical limitations drove development of first prototype in 2015 for a 30-day cross-country road trip.",
+    "gender": "female",
+    "disability_history": "13 years of surgeries and limitations \u2014 thoracic outlet syndrome causing compression of nerve and blood flow. Partially debilitated. Founding story directly tied to personal disability experience."
+  },
+  "equity_structure": {
+    "seed_round_target": 600000,
+    "pre_money_valuation": 6000000,
+    "outstanding_shares": 31278300,
+    "jason_equity_stake": 0.25
+  },
+  "financials": {
+    "total_budget": 3300000,
+    "monthly_expense": 40000,
+    "revenue_2026_base": 723000,
+    "revenue_2027_base": 1632000,
+    "breakeven_month": 24,
+    "gross_margin_b2b": 0.70,
+    "gross_margin_dtc": 0.77,
+    "units_breakeven_monthly": 450
+  },
+  "product_details": {
+    "msrp_b2b": "399-450",
+    "msrp_dtc": "450-499",
+    "regulatory_class": "Class I medical device (non-invasive, non-powered orthopedic)",
+    "regulatory_status": "Class I certification target Q4 2026",
+    "wcb_approved": true,
+    "hsa_eligible": true,
+    "patent_status": "pending Canada and USA, Europe application filed",
+    "ip_filings": ["full spine corrective mechanism", "patented adjustable spine support mechanism"]
+  },
+  "traction": {
+    "pilot_sold_out": true,
+    "b2b_pre_orders": true,
+    "fleet_lois_secured": true,
+    "wcb_approved_provinces": ["AB", "BC"],
+    "key_b2b_logos": ["Kootenay Wood Transport", "Bison Transport", "TFI International", "Trimac", "GoBolt", "City of Kelowna", "Growers Supply", "Alliance Mobility"],
+    "endorsements": ["Kevin Harrington Shark Tank", "Dr. Bob Ziegenfuss Chiropractic Medicine"]
+  },
+  "existing_relationships": {
+    "nrc_irap": "active relationship \u2014 listed Tier 1 in funding strategy",
+    "accelerate_okanagan": "active partner",
+    "ubc": "advisory relationship Dr. Alex Chan",
+    "george_brown_college": "collaborative relationship",
+    "camosun_college": "collaborative relationship",
+    "kast": "Kootenay Association Science Technology \u2014 Don Freschi EiR connection"
+  },
+  "existing_funding_strategy": {
+    "total_target": "750000 to 1500000 over 18 months",
+    "model": "cost reimbursement plus matching funding",
+    "leverage": "2-3X capital leverage",
+    "tier_1": ["NRC IRAP", "Accelerate IP"],
+    "tier_2": ["PacifiCan BSU", "Womens Entrepreneurship Strategy", "IRAP"],
+    "tier_3": ["Innovate BC", "CanExport", "BC Venture", "SRED"]
+  },
+  "grant_programs_to_research": [
+    "PacifiCan Business Scale-Up and Productivity Program (BC federal regional agency)",
+    "Women Entrepreneurship Strategy \u2014 Adele Hills female founder qualifies",
+    "NRC IRAP \u2014 existing relationship, already Tier 1 in strategy",
+    "Innovate BC \u2014 BC-specific innovation programs",
+    "CanExport \u2014 export market development (US and Europe targets)",
+    "BC Venture Acceleration Program",
+    "SR&ED Federal \u2014 2019-2021 R&D with engineering professors, ongoing product dev",
+    "SR&ED BC Provincial \u2014 10% on top of federal",
+    "Mitacs Accelerate \u2014 UBC and Camosun relationships provide academic partner access",
+    "NDF grants \u2014 noted in deck as fund-matching dollar for dollar"
+  ],
   "disability_funding_flag": {
     "status": "pending_confirmation",
-    "condition_noted": "Founder has thoracic outlet syndrome \u2014 documented compression of nerve and blood flow causing partial debilitation. Has undergone surgeries. Condition has materially impacted business progress.",
-    "funding_angle": "Entrepreneur with disability designation may unlock additional funding streams including disability-specific entrepreneurship grants and programs for entrepreneurs facing barriers",
-    "action_required": "Formal medical documentation from physician confirming diagnosis and functional impact required before applying to any disability-specific programs",
+    "condition_noted": "Founder Adele Hills has 13 years of surgeries and limitations from thoracic outlet syndrome \u2014 nerve and blood vessel compression causing partial debilitation. Personal disability directly inspired the product invention.",
+    "funding_angle": "Female founder with disability designation may unlock additional funding streams including disability-specific entrepreneurship programs",
+    "action_required": "Formal medical documentation from physician confirming current diagnosis and functional impact required before applying to any disability-specific programs",
     "programs_to_research_pending_confirmation": [
+      "ESDC Opportunities Fund \u2014 funds organizations delivering employment programs, NOT individual entrepreneurs directly. Research BC organizations running OF-funded programs that support entrepreneurs with disabilities",
       "BDC Small Business Loan \u2014 no age restriction, for-profit businesses",
-      "BDC \u2014 programs for entrepreneurs facing barriers",
-      "ISED Women Entrepreneurship Strategy if applicable",
-      "Provincial disability entrepreneurship programs",
-      "ESDC Opportunities Fund \u2014 NOTE: Funds organizations delivering employment programs, NOT individual entrepreneurs directly. Adele would need to access through an OF-funded delivery organization. Research Saskatchewan OF recipients who support entrepreneurs with disabilities.",
-      "Rick Hansen Foundation programs if applicable",
-      "Local community foundations with accessibility mandates"
+      "Disability-specific streams within Women Entrepreneurship Strategy",
+      "BC provincial disability entrepreneurship supports"
     ],
-    "note": "Do not include disability funding streams in any Sacral Solutions report until medical documentation is confirmed. Flag this profile for review once documentation is received."
+    "note": "Do not include disability funding streams in any report until medical documentation is confirmed."
   },
-  "profile_notes": "Profile incomplete. Sector, revenue, incorporation status, and full organizational details to be added. Disability funding angle to be activated pending physician confirmation. Do not run matcher until profile is completed."
+  "sred_assessment": {
+    "likely_eligible": true,
+    "rationale": "2019-2021 R&D conducted with Biomedical and Mechanical Engineering professors. Patent applications filed. Ongoing product development from V1 to V2. Biomechanical uncertainty in full-spine corrective mechanism design qualifies as experimental development.",
+    "estimated_eligible_activities": ["biomechanical design iterations", "materials testing", "clinical validation work", "V2 engineering development"],
+    "combined_credit_estimate": "35% federal plus 10% BC provincial equals 45% of eligible expenditures for CCPC",
+    "action": "Engage SR&ED consultant to assess 2024-2025 eligible expenditures before 18-month filing deadline"
+  },
+  "profile_notes": "Profile complete. Ready for matcher. BC-based for-profit medical device company with existing NRC IRAP relationship and defined funding strategy. Prioritize PacifiCan, Women Entrepreneurship Strategy, and SR&ED assessment first. Disability funding angle pending medical documentation."
 }

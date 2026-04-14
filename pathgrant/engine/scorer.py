@@ -152,6 +152,9 @@ def _joined_lower(grant: dict[str, Any], field: str) -> str:
 
 def _client_is_nfp(client: dict[str, Any]) -> bool:
     """Return True if the client profile indicates an NFP or charity."""
+    # Canonical structured field takes priority when present.
+    if client.get("organization_profit_status") == "non_profit":
+        return True
     legal = (client.get("legal_structure") or "").lower()
     if any(kw in legal for kw in _NFP_CLIENT_LEGAL_KEYWORDS):
         return True
@@ -163,8 +166,25 @@ def _client_is_nfp(client: dict[str, Any]) -> bool:
 
 
 def _client_is_for_profit(client: dict[str, Any]) -> bool:
-    """Return True if the client profile is explicitly flagged for-profit."""
-    return client.get("for_profit") is True
+    """Return True if the client profile is explicitly for-profit."""
+    # Canonical structured field takes priority; legacy boolean field
+    # for_profit=True is still supported for existing test fixtures.
+    if client.get("organization_profit_status") == "for_profit":
+        return True
+    if client.get("for_profit") is True:
+        return True
+    return False
+
+
+def _normalized_client_name(client: dict[str, Any]) -> str:
+    """Lowercase client name with leading articles stripped, for substring
+    matching against operator-stamped 'Not applicable to <name>' notes."""
+    name = (client.get("organization_name") or "").lower().strip()
+    for prefix in ("the ", "la ", "le ", "les "):
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+            break
+    return name
 
 
 def _grant_excludes_nonprofit(grant: dict[str, Any]) -> bool:
@@ -217,10 +237,15 @@ def score_grant(
         result_shell["eliminator"] = "province_not_eligible"
         return result_shell
 
+    # Operator flag eliminator. Match against the CURRENT client's name
+    # (normalized) rather than a hard-coded 'emerge academy' substring, so
+    # a grant whose notes say 'Not applicable to Emerge Academy' does not
+    # incorrectly eliminate when scored against Sacral Solutions.
     notes_lc = (grant.get("notes") or "").lower()
-    if (
-        "does not apply to emerge academy" in notes_lc
-        or "not applicable to emerge academy" in notes_lc
+    client_name_lc = _normalized_client_name(client)
+    if client_name_lc and (
+        f"does not apply to {client_name_lc}" in notes_lc
+        or f"not applicable to {client_name_lc}" in notes_lc
     ):
         result_shell["eliminator"] = "operator_flag_not_applicable"
         return result_shell
