@@ -37,6 +37,9 @@ def generate_grant_id(program_name: str) -> str:
         - lowercase
         - runs of non-alphanumeric characters collapse to a single underscore
         - max 60 characters
+        - when truncation is required, break on the last complete word
+          boundary (underscore) before the limit so the slug never cuts a
+          word in half
         - no leading or trailing underscores
     """
     if not isinstance(program_name, str):
@@ -48,8 +51,19 @@ def generate_grant_id(program_name: str) -> str:
     # trivial and makes the intent obvious.
     spaced = re.sub(r"[^a-z0-9]+", " ", lowered).strip()
     slug = re.sub(r"\s+", "_", spaced)
-    # Truncate and strip any trailing underscore the cut may have introduced.
-    return slug[:MAX_GRANT_ID_LENGTH].strip("_")
+
+    if len(slug) <= MAX_GRANT_ID_LENGTH:
+        return slug.strip("_")
+
+    # Truncation required. Start with the naive cut, then back up to the
+    # last underscore inside that window so we never split mid-word. If the
+    # first 60 chars contain no usable underscore (single very long word),
+    # fall back to the hard cut.
+    truncated = slug[:MAX_GRANT_ID_LENGTH]
+    last_underscore = truncated.rfind("_")
+    if last_underscore > 0:
+        truncated = truncated[:last_underscore]
+    return truncated.strip("_")
 
 
 def _load_records(path: Path) -> list[dict[str, Any]]:
@@ -185,7 +199,10 @@ def _run_tests() -> None:
         print()
 
     # ---- Test 4: grant_id generator ----
+    # Short names (<= 60 chars) never hit the truncation path.
+    # Long names (> 60 chars) must break on a word boundary.
     cases_4 = [
+        # Short-name regression cases
         (
             "Sport Canada \u2013 Sport Support Program (SSP)",
             "sport_canada_sport_support_program_ssp",
@@ -197,6 +214,19 @@ def _run_tests() -> None:
         (
             "TD Ready Commitment / Better Health \u2014 Youth Wellness 2026",
             "td_ready_commitment_better_health_youth_wellness_2026",
+        ),
+        # Long-name truncation cases -- must break on last underscore <= 60
+        (
+            "Sport for Social Development in Indigenous Communities \u2014 Stream Two",
+            "sport_for_social_development_in_indigenous_communities",
+        ),
+        (
+            "Canada Summer Jobs Student Work Experience Employment Opportunity Initiative Program",
+            "canada_summer_jobs_student_work_experience_employment",
+        ),
+        (
+            "Government of Saskatchewan Sport Development Fund for Rural Youth Communities",
+            "government_of_saskatchewan_sport_development_fund_for_rural",
         ),
     ]
     test_4_ok = True
