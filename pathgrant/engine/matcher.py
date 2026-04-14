@@ -42,12 +42,19 @@ GRANT_TYPE_SECTION_ORDER: tuple[str, ...] = (
     "research_grant",
 )
 
+# Synthetic section key for repayable-instrument records. is_repayable=True
+# records bypass grant_type bucketing and land here regardless of their
+# nominal grant_type, because a loan is categorically different from a
+# non-repayable grant and should never compete in the grant rankings.
+FINANCING_SECTION_KEY = "financing"
+
 GRANT_TYPE_SECTION_LABELS: dict[str, str] = {
     "program_grant": "PROGRAM GRANTS (ranked)",
     "wage_subsidy": "WAGE SUBSIDIES (ranked separately)",
     "capital_grant": "CAPITAL GRANTS (ranked separately)",
     "sponsorship": "SPONSORSHIPS (ranked separately)",
     "research_grant": "RESEARCH GRANTS (ranked separately)",
+    FINANCING_SECTION_KEY: "FINANCING (repayable, separate from grant rankings)",
 }
 
 
@@ -81,16 +88,23 @@ def group_by_grant_type(
 ) -> dict[str, list[dict[str, Any]]]:
     """Bucket a ranked list into sections keyed by grant_type.
 
-    Preserves the input ordering within each bucket, so the highest-scoring
-    record in a section is first. Grant types not listed in
-    GRANT_TYPE_SECTION_ORDER fall into a trailing 'other' bucket so nothing
-    is silently dropped.
+    is_repayable=True records are pulled out of the grant_type buckets
+    entirely and routed to the FINANCING section so loans never compete
+    against non-repayable grants in the main rankings. Preserves the
+    input ordering within each bucket so the highest-scoring record in
+    a section is first. Grant types not listed in
+    GRANT_TYPE_SECTION_ORDER fall into a trailing 'other' bucket so
+    nothing is silently dropped.
     """
     groups: dict[str, list[dict[str, Any]]] = {
         gt: [] for gt in GRANT_TYPE_SECTION_ORDER
     }
     groups["other"] = []
+    groups[FINANCING_SECTION_KEY] = []
     for result in ranked:
+        if result.get("is_repayable") is True:
+            groups[FINANCING_SECTION_KEY].append(result)
+            continue
         gt = result.get("grant_type") or "program_grant"
         if gt in groups:
             groups[gt].append(result)
@@ -153,7 +167,7 @@ def _cli() -> None:
     print("Grouped by grant_type:")
     print()
 
-    section_order = list(GRANT_TYPE_SECTION_ORDER) + ["other"]
+    section_order = list(GRANT_TYPE_SECTION_ORDER) + ["other", FINANCING_SECTION_KEY]
     for gt in section_order:
         section = groups.get(gt, [])
         if not section:

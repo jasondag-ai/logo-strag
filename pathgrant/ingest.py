@@ -137,16 +137,22 @@ def ingest_grant(
     """
     record = dict(record)  # shallow copy so we do not mutate the caller's dict
 
-    # 1. Ensure grant_id and grant_type. grant_type defaults to
-    #    "program_grant" when the operator does not specify one so the
-    #    matcher always has a section to bucket the record into; the
-    #    validator still enforces the controlled vocabulary.
+    # 1. Ensure grant_id, grant_type, and is_repayable.
+    #    - grant_type defaults to "program_grant" so the matcher always has
+    #      a section to bucket the record into.
+    #    - is_repayable defaults to False so the matcher never quietly
+    #      treats a new record as a loan just because the operator forgot
+    #      to set the field.
+    #    The validator still enforces the controlled vocabulary / type
+    #    requirements for both fields.
     grant_id = record.get("grant_id")
     if not grant_id:
         grant_id = generate_grant_id(record.get("program_name") or "")
         record["grant_id"] = grant_id
     if "grant_type" not in record:
         record["grant_type"] = "program_grant"
+    if "is_repayable" not in record:
+        record["is_repayable"] = False
 
     # 2. Persist fixture payload.
     fixtures_dir.mkdir(parents=True, exist_ok=True)

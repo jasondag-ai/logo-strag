@@ -54,7 +54,8 @@
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "UFA Foundation Rural Communities Grant",
@@ -112,7 +113,8 @@
     "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Program funds capital projects only not operating programs. Pre-launch academy seeking operating funds likely ineligible. Must confirm Langenburg SK is within 200km of a UFA location before recommending. Annual intake June 13 to Aug 31. Website returned 403 during live scrape — verified via cached sources and official UFA press releases.",
     "grant_id": "ufa_foundation_rural_communities_grant",
     "validation_warnings": [],
-    "grant_type": "capital_grant"
+    "grant_type": "capital_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Sask Sport Indigenous Community Sport Development Grant Program",
@@ -166,7 +168,8 @@
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "RBC Foundation Community Investments Canada",
@@ -228,7 +231,8 @@
     "notes": "IMPORTANT: The RBC Foundation Indigenous Youth Leadership Program listed in prior PathGrant reports does not exist as a standalone program. This is the actual RBC Foundation grant program. ELIGIBILITY RISK: Sports teams explicitly excluded unless qualified donee. Emerge Academy as a hockey academy may be classified as a sports team. Application must frame organization as education and Indigenous youth development NFP, not as a sports team. Rolling intake. No published deadline.",
     "grant_id": "rbc_foundation_community_investments_canada",
     "validation_warnings": [],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Cameco Northern Saskatchewan Community Investment",
@@ -279,7 +283,8 @@
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Community Initiatives Fund of Saskatchewan Community Grant Program",
@@ -333,7 +338,8 @@
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Saskatchewan First Nations and Metis Community Partnership Projects",
@@ -386,7 +392,8 @@
     ],
     "time_sensitive": true,
     "time_sensitive_note": "Deadline 2026-05-31 is 47 days away (within 60-day window; current date 2026-04-14)",
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Saskatchewan First Nations and Metis Sponsorships",
@@ -438,7 +445,8 @@
       "amount_unconfirmed - verify before using in client report",
       "url_collision - multiple programs share this source URL, verify these are distinct programs"
     ],
-    "grant_type": "sponsorship"
+    "grant_type": "sponsorship",
+    "is_repayable": false
   },
   {
     "program_name": "Saskatchewan MMIWG Plus Community Response Fund",
@@ -487,7 +495,8 @@
     "validation_warnings": [
       "url_collision - multiple programs share this source URL, verify these are distinct programs"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Canada Summer Jobs",
@@ -542,7 +551,8 @@
       "amount_unconfirmed - verify before using in client report",
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
-    "grant_type": "wage_subsidy"
+    "grant_type": "wage_subsidy",
+    "is_repayable": false
   },
   {
     "program_name": "NRC Industrial Research Assistance Program Financial Assistance",
@@ -598,7 +608,8 @@
     "notes": "RELATIONSHIP-BASED program — approval depends heavily on Industrial Technology Advisor (ITA) relationship, not a scored competition. First step is calling 1-877-994-4727 to be assessed for ITA assignment. Stackable with SR&ED tax credits. NOT applicable to non-profits (Emerge Academy excluded). Highly relevant for Sacral Solutions and any for-profit tech client. AI Assist stream ($100M over 5 years) and DI Assist stream ($244.2M launched January 2026) are active sub-programs for AI and defence/dual-use tech respectively. Program transitioning to Canada Innovation Corporation by 2026-27 — monitor for structural changes.",
     "grant_id": "nrc_industrial_research_assistance_program_financial",
     "validation_warnings": [],
-    "grant_type": "research_grant"
+    "grant_type": "research_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Mitacs Accelerate",
@@ -656,6 +667,7 @@
     "notes": "IMPORTANT FOR SK CLIENTS: Limited funding available in Saskatchewan for 2025-2026 fiscal year. Confirm availability with local Mitacs advisor before recommending. Rolling intake, 6-8 week review. NFPs eligible if project demonstrates economic or productivity orientation. Indigenous Pathways initiative cap increased from 12 to 30 internship units per submission year as of December 15 2025 — relevant for Indigenous-led organizations. Requires academic institution partner — client must identify a university or college collaborator before applying. Good fit for Sacral Solutions if they have an R&D component.",
     "grant_id": "mitacs_accelerate",
     "validation_warnings": [],
-    "grant_type": "research_grant"
+    "grant_type": "research_grant",
+    "is_repayable": false
   }
 ]

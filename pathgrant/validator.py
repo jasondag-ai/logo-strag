@@ -154,6 +154,14 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
             f"grant_type '{grant_type}' not in {sorted(ALLOWED_GRANT_TYPES)}"
         )
 
+    # is_repayable is optional but must be a boolean when set. Absent is
+    # treated as False (i.e. a non-repayable grant) by downstream code.
+    is_repayable = record.get("is_repayable")
+    if is_repayable is not None and not isinstance(is_repayable, bool):
+        errors.append(
+            f"is_repayable must be boolean, got {type(is_repayable).__name__}"
+        )
+
     # eligibility_criteria minimum count (RULE 2).
     criteria = record.get("eligibility_criteria")
     if criteria is not None:

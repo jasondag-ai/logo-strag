@@ -44,7 +44,8 @@
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "TD Bank Ready Commitment Community Giving",
@@ -100,7 +101,8 @@
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   },
   {
     "program_name": "Canadian Heritage Sport Participation Fund",
@@ -153,6 +155,7 @@
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ],
-    "grant_type": "program_grant"
+    "grant_type": "program_grant",
+    "is_repayable": false
   }
 ]
