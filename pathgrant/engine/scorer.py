@@ -300,6 +300,7 @@ def score_grant(
         "grant_id": grant_id,
         "program_name": program_name,
         "grant_type": grant.get("grant_type") or "program_grant",
+        "record_type": grant.get("record_type") or "grant",
         "is_repayable": bool(grant.get("is_repayable")),
         "score": 0,
         "signals": signals,

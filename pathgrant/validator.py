@@ -49,6 +49,18 @@ ALLOWED_GRANT_TYPES: frozenset[str] = frozenset(
     }
 )
 
+# record_type controlled vocabulary. Distinguishes actionable grant records
+# from informational records that must NOT be ranked alongside real grants.
+# 'grant' is the default; 'scoring_note' records appear in a dedicated
+# ADVISORY section in matcher output and carry contextual guidance rather
+# than a discrete funding opportunity.
+ALLOWED_RECORD_TYPES: frozenset[str] = frozenset(
+    {
+        "grant",          # default -- actionable grant record
+        "scoring_note",   # informational, excluded from ranked output
+    }
+)
+
 # Minimum number of eligibility criteria per RULE 2.
 MIN_ELIGIBILITY_CRITERIA = 3
 
@@ -153,6 +165,15 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
     if grant_type is not None and grant_type not in ALLOWED_GRANT_TYPES:
         errors.append(
             f"grant_type '{grant_type}' not in {sorted(ALLOWED_GRANT_TYPES)}"
+        )
+
+    # record_type is optional but must be from the controlled vocabulary
+    # when set. Used by the matcher to route scoring_note records out of
+    # the ranked sections into a dedicated ADVISORY section.
+    record_type = record.get("record_type")
+    if record_type is not None and record_type not in ALLOWED_RECORD_TYPES:
+        errors.append(
+            f"record_type '{record_type}' not in {sorted(ALLOWED_RECORD_TYPES)}"
         )
 
     # is_repayable is optional but must be a boolean when set. Absent is

@@ -49,11 +49,18 @@ GRANT_TYPE_SECTION_ORDER: tuple[str, ...] = (
 # non-repayable grant and should never compete in the grant rankings.
 FINANCING_SECTION_KEY = "financing"
 
+# Synthetic section key for informational records (record_type='scoring_note').
+# These records bypass all other routing and land in the ADVISORY NOTES
+# section, which is explicitly NOT ranked -- scoring_note records typically
+# describe contextual guidance (e.g. 'being women-owned gives GBA+ scoring
+# priority in mainstream programs') rather than an actionable funding opp.
+ADVISORY_SECTION_KEY = "advisory"
+
 # Display order for grouped matcher output: normal grant_type buckets
 # first, then any records whose grant_type was outside the vocabulary,
-# then the two terminal sections -- FINANCING (repayable instruments,
-# bypasses grant_type routing) and TAX CREDITS (tax-credit grant_type).
-# TAX CREDITS sits after FINANCING per operator spec.
+# then terminal sections in order: FINANCING (repayable), TAX CREDITS
+# (tax-credit grant_type), and ADVISORY NOTES (scoring_note record_type)
+# at the very end per operator spec.
 SECTION_DISPLAY_ORDER: tuple[str, ...] = (
     "program_grant",
     "wage_subsidy",
@@ -63,6 +70,7 @@ SECTION_DISPLAY_ORDER: tuple[str, ...] = (
     "other",
     FINANCING_SECTION_KEY,
     "tax_credit",
+    ADVISORY_SECTION_KEY,
 )
 
 GRANT_TYPE_SECTION_LABELS: dict[str, str] = {
@@ -73,6 +81,7 @@ GRANT_TYPE_SECTION_LABELS: dict[str, str] = {
     "research_grant": "RESEARCH GRANTS (ranked separately)",
     "tax_credit": "TAX CREDITS (ranked separately)",
     FINANCING_SECTION_KEY: "FINANCING (repayable, separate from grant rankings)",
+    ADVISORY_SECTION_KEY: "ADVISORY NOTES (informational, not ranked)",
 }
 
 
@@ -104,22 +113,31 @@ def match(
 def group_by_grant_type(
     ranked: list[dict[str, Any]],
 ) -> dict[str, list[dict[str, Any]]]:
-    """Bucket a ranked list into sections keyed by grant_type.
+    """Bucket a ranked list into sections.
 
-    is_repayable=True records are pulled out of the grant_type buckets
-    entirely and routed to the FINANCING section so loans never compete
-    against non-repayable grants in the main rankings. Preserves the
-    input ordering within each bucket so the highest-scoring record in
-    a section is first. Grant types not listed in
-    GRANT_TYPE_SECTION_ORDER fall into a trailing 'other' bucket so
-    nothing is silently dropped.
+    Routing priority, highest first:
+      1. record_type == 'scoring_note' -> ADVISORY NOTES (informational,
+         never ranked alongside real grants, regardless of grant_type or
+         is_repayable).
+      2. is_repayable == True          -> FINANCING (loans are a different
+         instrument class and never compete in the grant rankings).
+      3. grant_type                    -> one of the grant_type buckets.
+      4. unknown grant_type            -> 'other' bucket so nothing is
+         silently dropped.
+
+    Preserves the input ordering within each bucket, so the
+    highest-scoring record in a section is first.
     """
     groups: dict[str, list[dict[str, Any]]] = {
         gt: [] for gt in GRANT_TYPE_SECTION_ORDER
     }
     groups["other"] = []
     groups[FINANCING_SECTION_KEY] = []
+    groups[ADVISORY_SECTION_KEY] = []
     for result in ranked:
+        if result.get("record_type") == "scoring_note":
+            groups[ADVISORY_SECTION_KEY].append(result)
+            continue
         if result.get("is_repayable") is True:
             groups[FINANCING_SECTION_KEY].append(result)
             continue

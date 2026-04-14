@@ -46,7 +46,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "TD Bank Ready Commitment Community Giving",
@@ -104,7 +105,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Canadian Heritage Sport Participation Fund",
@@ -159,7 +161,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Hockey Canada Foundation Assist Fund",
@@ -210,7 +213,8 @@
     "notes": "PARTIAL DATA: $500 per player max — player subsidy not academy operating grant. Useful to reduce per-student costs for Emerge Academy but does not address core funding need. Status verify_required pending full program page review.",
     "grant_id": "hockey_canada_foundation_assist_fund",
     "validation_warnings": [],
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Canada Digital Adoption Program Boost Your Business Technology",
@@ -262,7 +266,8 @@
     "notes": "STATUS UNCERTAIN: CDAP announced as winding down in 2024 federal budget. Verify current program status before recommending. Not applicable to Emerge Academy NFP or pre-revenue OpsCo. Relevant for Sacral Solutions once revenue threshold met.",
     "grant_id": "canada_digital_adoption_program_boost_your_business",
     "validation_warnings": [],
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "United Way Canada Strong Kids Initiative Saskatchewan",
@@ -320,7 +325,8 @@
       "amount_unconfirmed - verify before using in client report",
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification",
       "url 'https://unitedwaysaskatoon.ca/' looks like a homepage, not a program page; caller should set status = 'url_unverified'"
-    ]
+    ],
+    "record_type": "grant"
   },
   {
     "program_name": "Canadian Heritage Building Communities Through Arts and Heritage",
@@ -378,6 +384,7 @@
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report",
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
-    ]
+    ],
+    "record_type": "grant"
   }
 ]

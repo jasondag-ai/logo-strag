@@ -56,7 +56,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Sport Canada Community Sport for All Initiative",
@@ -114,6 +115,7 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   }
 ]

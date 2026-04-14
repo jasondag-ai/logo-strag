@@ -56,7 +56,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "UFA Foundation Rural Communities Grant",
@@ -116,7 +117,8 @@
     "validation_warnings": [],
     "grant_type": "capital_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Sask Sport Indigenous Community Sport Development Grant Program",
@@ -172,7 +174,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "RBC Foundation Community Investments Canada",
@@ -236,7 +239,8 @@
     "validation_warnings": [],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Cameco Northern Saskatchewan Community Investment",
@@ -289,7 +293,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Community Initiatives Fund of Saskatchewan Community Grant Program",
@@ -345,7 +350,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Saskatchewan First Nations and Metis Community Partnership Projects",
@@ -400,7 +406,8 @@
     "time_sensitive_note": "Deadline 2026-05-31 is 47 days away (within 60-day window; current date 2026-04-14)",
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Saskatchewan First Nations and Metis Sponsorships",
@@ -454,7 +461,8 @@
     ],
     "grant_type": "sponsorship",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Saskatchewan MMIWG Plus Community Response Fund",
@@ -505,7 +513,8 @@
     ],
     "grant_type": "program_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Canada Summer Jobs",
@@ -562,7 +571,8 @@
     ],
     "grant_type": "wage_subsidy",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "NRC Industrial Research Assistance Program Financial Assistance",
@@ -620,7 +630,8 @@
     "validation_warnings": [],
     "grant_type": "research_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Mitacs Accelerate",
@@ -680,7 +691,8 @@
     "validation_warnings": [],
     "grant_type": "research_grant",
     "is_repayable": false,
-    "founder_age_restriction": null
+    "founder_age_restriction": null,
+    "record_type": "grant"
   },
   {
     "program_name": "Futurpreneur Canada Startup Financing Program",
@@ -738,7 +750,8 @@
     "founder_age_restriction": {
       "min_age": 18,
       "max_age": 39
-    }
+    },
+    "record_type": "grant"
   },
   {
     "program_name": "First Nations Finance Authority Financing Program",
@@ -792,7 +805,8 @@
     "notes": "DATABASE CORRECTION: The FNFA Community Development Fund listed in original PathGrant reports does not exist. FNFA provides financing to First Nation governments only — not grants to NFP organizations. Will appear in FINANCING section only. Not applicable to Emerge Academy. Relevant only if a client is a First Nation government seeking infrastructure financing.",
     "grant_id": "first_nations_finance_authority_financing_program",
     "founder_age_restriction": null,
-    "validation_warnings": []
+    "validation_warnings": [],
+    "record_type": "grant"
   },
   {
     "program_name": "ESDC Opportunities Fund for Persons with Disabilities Regional Component",
@@ -850,7 +864,8 @@
     "founder_age_restriction": null,
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
-    ]
+    ],
+    "record_type": "grant"
   },
   {
     "program_name": "Saskatchewan Lotteries Community Grant Program",
@@ -909,7 +924,8 @@
     "notes": "ACCESS PATH FOR EMERGE ACADEMY: Apply through Town of Langenburg or a Treaty 4 First Nation community as the municipal/First Nation intake point. Emerge Academy as an NFP would receive funding through the community intake rather than directly. Alternatively apply through Sask Sport as a member organization once incorporated. Over 1,200 organizations receive direct funding through this system — it is the primary sport funding mechanism in Saskatchewan. Indigenous people explicitly listed as priority population.",
     "grant_id": "saskatchewan_lotteries_community_grant_program",
     "founder_age_restriction": null,
-    "validation_warnings": []
+    "validation_warnings": [],
+    "record_type": "grant"
   },
   {
     "program_name": "Federal Scientific Research and Experimental Development Tax Incentive Program",
@@ -972,7 +988,8 @@
     "founder_age_restriction": null,
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
-    ]
+    ],
+    "record_type": "grant"
   },
   {
     "program_name": "Saskatchewan Research and Development Tax Credit",
@@ -1032,6 +1049,7 @@
     "founder_age_restriction": null,
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
-    ]
+    ],
+    "record_type": "grant"
   }
 ]
