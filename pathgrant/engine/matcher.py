@@ -150,6 +150,10 @@ def _format_match(rank: int, result: dict[str, Any]) -> str:
             if "reason" in p:
                 label = f"{p['label']} \u2014 {p['reason']}"
             lines.append(f"    {p['points']:>5d}  {label}")
+    if result.get("warnings"):
+        lines.append("  warnings     :")
+        for w in result["warnings"]:
+            lines.append(f"    ! {w}")
     return "\n".join(lines)
 
 

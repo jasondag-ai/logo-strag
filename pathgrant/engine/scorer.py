@@ -31,6 +31,9 @@ MIN_OPERATING_YEARS_PENALTY = -20             # minimum-operating-years clause +
 GEOGRAPHIC_RISK_PENALTY = -10                 # operator notes stamped "GEOGRAPHIC RISK"
 NONPROFIT_INELIGIBLE_PENALTY = -80            # NFP client + grant excludes non-profits
 FOR_PROFIT_INELIGIBLE_PENALTY = -80           # for-profit client + grant restricts to NFP
+FN_GOVT_ONLY_PENALTY = -60                    # FN-govt-only grant + non-Indigenous client
+CAPITAL_ONLY_MISMATCH_PENALTY = -40           # capital-only grant + non-capital-sector client
+FOUNDER_AGE_INELIGIBLE_PENALTY = -80          # founder age outside grant age window
 AMOUNT_UNCONFIRMED_PENALTY = -3
 DEADLINE_UNKNOWN_PENALTY = -3
 URL_COLLISION_PENALTY = -2
@@ -80,6 +83,33 @@ _FOR_PROFIT_ELIGIBILITY_KEYWORDS: tuple[str, ...] = (
     "profit-oriented",
     "sme",
     "small or medium",
+)
+
+
+# Phrases (case-insensitive substring match) in grant eligibility or
+# organization_types_eligible text that mean "you must be a First Nation
+# government, Band Council, Tribal Council, or Metis Nation to apply".
+_FN_GOVT_ELIGIBILITY_PHRASES: tuple[str, ...] = (
+    "first nation government",
+    "band council recognized by government of canada",
+    "tribal council recognized by",
+    "metis nation or government recognized by",
+)
+
+# Phrases (case-insensitive substring match) in grant exclusions that mean
+# the grant funds capital projects only and will not pay for operating
+# expenses or salaries.
+_CAPITAL_ONLY_EXCLUSION_PHRASES: tuple[str, ...] = (
+    "capital projects only",
+    "operating costs not eligible",
+    "salaries not eligible",
+)
+
+# Client sectors that indicate a business or organization for which
+# capital-project-only grants make sense (rural infrastructure,
+# agriculture, physical-assets investment).
+_CAPITAL_CLIENT_SECTORS: frozenset[str] = frozenset(
+    {"rural", "agriculture", "infrastructure", "capital_projects"}
 )
 
 
@@ -187,6 +217,51 @@ def _normalized_client_name(client: dict[str, Any]) -> str:
     return name
 
 
+def _grant_requires_fn_govt(grant: dict[str, Any]) -> bool:
+    """True if the grant's eligibility or organization_types_eligible text
+    requires First Nation government / Band Council / Tribal Council /
+    Metis Nation status."""
+    eligibility = _joined_lower(grant, "eligibility_criteria")
+    org_types = _joined_lower(grant, "organization_types_eligible")
+    haystack = eligibility + " " + org_types
+    return any(phrase in haystack for phrase in _FN_GOVT_ELIGIBILITY_PHRASES)
+
+
+def _client_is_fn_govt_or_indigenous(client: dict[str, Any]) -> bool:
+    """Exemption check for the first_nation_govt_only penalty.
+
+    Per operator spec the penalty is suppressed when the client is either
+    Indigenous-led or an explicitly First-Nation organization_type. This is
+    an intentionally permissive exemption -- an Indigenous-led NFP is not
+    literally a First Nation government, but the operator's rationale is
+    that Indigenous-led clients have the relationship base needed to
+    negotiate access to First-Nation-restricted instruments.
+    """
+    if client.get("Indigenous_led") is True:
+        return True
+    org_type = (client.get("organization_type") or "").lower()
+    if "first nation" in org_type:
+        return True
+    return False
+
+
+def _grant_is_capital_only(grant: dict[str, Any]) -> bool:
+    """True if the grant's exclusions text marks it as capital-projects-only
+    (operating costs / salaries explicitly ineligible)."""
+    exclusions_text = _joined_lower(grant, "exclusions")
+    return any(
+        phrase in exclusions_text for phrase in _CAPITAL_ONLY_EXCLUSION_PHRASES
+    )
+
+
+def _client_has_capital_sector(client: dict[str, Any]) -> bool:
+    """True if the client's sectors overlap the set for which capital-only
+    grants are a plausible fit (rural, agriculture, infrastructure, capital
+    projects)."""
+    sectors = _normalize_sectors(client.get("sectors"))
+    return bool(sectors & _CAPITAL_CLIENT_SECTORS)
+
+
 def _grant_excludes_nonprofit(grant: dict[str, Any]) -> bool:
     """True if the grant's exclusions text contains a for-profit-only phrase."""
     exclusions_text = _joined_lower(grant, "exclusions")
@@ -217,6 +292,7 @@ def score_grant(
 
     signals: list[dict[str, Any]] = []
     penalties: list[dict[str, Any]] = []
+    warnings: list[str] = []
     score = 0
     eliminator: str | None = None
 
@@ -228,6 +304,7 @@ def score_grant(
         "score": 0,
         "signals": signals,
         "penalties": penalties,
+        "warnings": warnings,
         "eliminator": None,
     }
 
@@ -325,6 +402,60 @@ def score_grant(
                 "reason": "grant requires NFP or charity status",
             }
         )
+
+    # First-Nation-government-only grants vs non-Indigenous clients.
+    if _grant_requires_fn_govt(grant) and not _client_is_fn_govt_or_indigenous(client):
+        score += FN_GOVT_ONLY_PENALTY
+        penalties.append(
+            {
+                "label": "first_nation_govt_only",
+                "points": FN_GOVT_ONLY_PENALTY,
+                "reason": "requires First Nation government status",
+            }
+        )
+
+    # Capital-project-only grants vs clients without a capital/rural/
+    # infrastructure sector footprint. This is distinct from the
+    # capital_only_vs_pre_launch_operating_need rule above, which fires on
+    # stage=pre_launch regardless of sector. Both rules can fire together.
+    if _grant_is_capital_only(grant) and not _client_has_capital_sector(client):
+        score += CAPITAL_ONLY_MISMATCH_PENALTY
+        penalties.append(
+            {
+                "label": "capital_only_mismatch",
+                "points": CAPITAL_ONLY_MISMATCH_PENALTY,
+                "reason": "grant funds capital projects only",
+            }
+        )
+
+    # Founder-age restriction check. Hard penalty when the founder falls
+    # outside the grant's age window; soft warning only when the client
+    # profile does not carry a founder_age value so the operator knows to
+    # confirm manually.
+    far = grant.get("founder_age_restriction")
+    if isinstance(far, dict):
+        far_min = far.get("min_age")
+        far_max = far.get("max_age")
+        if isinstance(far_min, int) and isinstance(far_max, int):
+            founder_age = client.get("founder_age")
+            if isinstance(founder_age, int):
+                if founder_age < far_min or founder_age > far_max:
+                    score += FOUNDER_AGE_INELIGIBLE_PENALTY
+                    penalties.append(
+                        {
+                            "label": "founder_age_ineligible",
+                            "points": FOUNDER_AGE_INELIGIBLE_PENALTY,
+                            "reason": (
+                                f"founder age {founder_age} outside grant "
+                                f"range {far_min}-{far_max}"
+                            ),
+                        }
+                    )
+            else:
+                warnings.append(
+                    f"founder_age_unverified - confirm founder age meets "
+                    f"restriction ({far_min}-{far_max})"
+                )
 
     if client.get("stage") == "pre_launch":
         if (
@@ -623,6 +754,163 @@ def _run_tests() -> None:
         f"    program_grant bucket : "
         f"{[g['grant_id'] for g in groups['program_grant']]}"
     )
+    print()
+
+    # Test 8: First-Nation-government-only grant fires first_nation_govt_only
+    # penalty against a non-Indigenous for-profit client.
+    fn_govt_only_grant = {
+        "grant_id": "test_fn_govt_only",
+        "program_name": "FN Govt Only Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["infrastructure"],
+        "exclusions": [],
+        "eligibility_criteria": [
+            "Must be a recognized First Nation government or FN member organization",
+            "Must pledge eligible revenues against the financing",
+            "Projects must benefit community infrastructure",
+        ],
+        "organization_types_eligible": [
+            "First Nation governments that are FNFA members",
+            "Tribal Councils recognized by registered First Nation Bands",
+        ],
+        "status": "active",
+        "amount_max": 1000000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": False,
+        "validation_warnings": [],
+    }
+    r8 = score_grant(for_profit_client, fn_govt_only_grant)
+    t8_ok = any(p["label"] == "first_nation_govt_only" for p in r8["penalties"])
+    results.append(("Test 8", t8_ok))
+    print(f"[{'PASS' if t8_ok else 'FAIL'}] Test 8: FN-govt-only grant x non-Indigenous "
+          "for-profit client fires first_nation_govt_only")
+    print(f"    penalties: {json.dumps(r8['penalties'])}")
+    print()
+
+    # Test 8b: same grant x Indigenous-led client does NOT fire penalty.
+    indigenous_led_client = {
+        "province": "SK",
+        "sectors": ["sport"],
+        "Indigenous_led": True,
+        "stage": "operating",
+    }
+    r8b = score_grant(indigenous_led_client, fn_govt_only_grant)
+    t8b_ok = not any(p["label"] == "first_nation_govt_only" for p in r8b["penalties"])
+    results.append(("Test 8b", t8b_ok))
+    print(f"[{'PASS' if t8b_ok else 'FAIL'}] Test 8b: FN-govt-only grant x "
+          "Indigenous-led client does NOT fire first_nation_govt_only")
+    print(f"    penalties: {json.dumps(r8b['penalties'])}")
+    print()
+
+    # Test 9: capital-only grant fires capital_only_mismatch against a
+    # non-capital-sector client.
+    capital_only_grant = {
+        "grant_id": "test_capital_only",
+        "program_name": "Capital Only Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["capital_projects"],
+        "exclusions": [
+            "CRITICAL: Operating costs and salaries not eligible -- capital projects only",
+            "Religious organizations not eligible",
+        ],
+        "eligibility_criteria": [
+            "Project must be a capital project",
+            "Must be located in a rural community",
+            "Must benefit local residents",
+        ],
+        "status": "active",
+        "amount_max": 40000,
+        "amount_verified": True,
+        "intake_type": "annual",
+        "intake_open_date": "2026-06-01",
+        "intake_close_date": "2026-08-01",
+        "stackable": True,
+        "validation_warnings": [],
+    }
+    r9 = score_grant(for_profit_client, capital_only_grant)
+    t9_ok = any(p["label"] == "capital_only_mismatch" for p in r9["penalties"])
+    results.append(("Test 9", t9_ok))
+    print(f"[{'PASS' if t9_ok else 'FAIL'}] Test 9: capital-only grant x "
+          "non-capital-sector client fires capital_only_mismatch")
+    print(f"    penalties: {json.dumps(r9['penalties'])}")
+    print()
+
+    # Test 9b: same capital-only grant x client with 'rural' sector does NOT
+    # fire capital_only_mismatch (sector exemption).
+    rural_client = {
+        "province": "SK",
+        "sectors": ["rural", "education"],
+        "stage": "operating",
+    }
+    r9b = score_grant(rural_client, capital_only_grant)
+    t9b_ok = not any(p["label"] == "capital_only_mismatch" for p in r9b["penalties"])
+    results.append(("Test 9b", t9b_ok))
+    print(f"[{'PASS' if t9b_ok else 'FAIL'}] Test 9b: capital-only grant x "
+          "rural-sector client does NOT fire capital_only_mismatch")
+    print(f"    penalties: {json.dumps(r9b['penalties'])}")
+    print()
+
+    # Test 10: founder_age_restriction penalty fires when client founder_age
+    # is outside the grant age window.
+    age_restricted_grant = {
+        "grant_id": "test_age_restricted",
+        "program_name": "Age-Restricted Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["entrepreneurship"],
+        "exclusions": [],
+        "eligibility_criteria": [
+            "Must be an entrepreneur aged 18 to 39",
+            "Must be a Canadian citizen",
+            "Business must be operating or launching within 12 months",
+        ],
+        "status": "active",
+        "amount_max": 60000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": True,
+        "validation_warnings": [],
+        "founder_age_restriction": {"min_age": 18, "max_age": 39},
+    }
+    older_founder_client = {
+        "province": "SK",
+        "sectors": ["technology"],
+        "for_profit": True,
+        "stage": "operating",
+        "founder_age": 50,
+    }
+    r10 = score_grant(older_founder_client, age_restricted_grant)
+    t10_ok = any(p["label"] == "founder_age_ineligible" for p in r10["penalties"])
+    results.append(("Test 10", t10_ok))
+    print(f"[{'PASS' if t10_ok else 'FAIL'}] Test 10: age-restricted grant x "
+          "client founder_age=50 fires founder_age_ineligible")
+    print(f"    penalties: {json.dumps(r10['penalties'])}")
+    print()
+
+    # Test 11: founder_age_unverified WARNING fires when the grant has an age
+    # restriction but the client profile does not carry a founder_age field.
+    # This is a warning, not a penalty -- the scorer cannot rule the grant
+    # in or out without the missing data, so it flags for manual review.
+    missing_age_client = {
+        "province": "SK",
+        "sectors": ["technology"],
+        "for_profit": True,
+        "stage": "operating",
+        # no founder_age key
+    }
+    r11 = score_grant(missing_age_client, age_restricted_grant)
+    has_warning = any(
+        w.startswith("founder_age_unverified") for w in r11.get("warnings", [])
+    )
+    has_no_age_penalty = not any(
+        p["label"] == "founder_age_ineligible" for p in r11["penalties"]
+    )
+    t11_ok = has_warning and has_no_age_penalty
+    results.append(("Test 11", t11_ok))
+    print(f"[{'PASS' if t11_ok else 'FAIL'}] Test 11: age-restricted grant x "
+          "client with no founder_age adds founder_age_unverified warning only")
+    print(f"    warnings : {json.dumps(r11.get('warnings', []))}")
+    print(f"    penalties: {json.dumps(r11['penalties'])}")
     print()
 
     all_passed = all(ok for _, ok in results)
