@@ -39,12 +39,20 @@ URL_COLLISION_PENALTY = -2
 # ----- NFP / for-profit mismatch lexicons -----
 
 # Phrases (case-insensitive substring match) in grant exclusions that mean
-# "non-profits are not eligible; you must be a for-profit entity".
+# "non-profits are not eligible; you must be a for-profit entity". The list
+# is deliberately redundant -- some phrases are substrings of others -- so
+# that each operator-reviewed phrasing is self-documenting in the trigger
+# list rather than hiding behind an implicit substring match.
 _FOR_PROFIT_EXCLUSION_PHRASES: tuple[str, ...] = (
     "non-profit organizations not eligible",
     "for-profit only",
+    "for-profit businesses only",
     "profit-oriented",
+    "profit-oriented businesses only",
     "incorporated for-profit",
+    "nfp and charitable organizations not eligible",
+    "charities not eligible",
+    "non-profit not eligible",
 )
 
 # Keywords in client legal_structure that identify an NFP or charity client.
@@ -451,6 +459,69 @@ def _run_tests() -> None:
     print(f"[{'PASS' if t4_ok else 'FAIL'}] Test 4: for-profit client x for-profit-only "
           "grant does not fire for_profit_ineligible")
     print(f"    penalties: {json.dumps(r4['penalties'])}")
+    print()
+
+    # Test 5: CDAP-style wording -- 'For-profit businesses only -- NFP not
+    # eligible' -- should fire non_profit_ineligible against an NFP client.
+    cdap_like_grant = {
+        "grant_id": "test_cdap_like",
+        "program_name": "CDAP-like Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["technology"],
+        "exclusions": [
+            "CRITICAL: For-profit businesses only -- NFP not eligible",
+            "Pre-revenue businesses not eligible",
+        ],
+        "eligibility_criteria": [
+            "Must be incorporated for-profit business",
+            "Must have minimum $500,000 in annual revenue",
+            "Must adopt new digital technologies",
+        ],
+        "status": "active",
+        "amount_max": 15000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": True,
+        "validation_warnings": [],
+    }
+    r5 = score_grant(nfp_client, cdap_like_grant)
+    t5_ok = any(p["label"] == "non_profit_ineligible" for p in r5["penalties"])
+    results.append(("Test 5", t5_ok))
+    print(f"[{'PASS' if t5_ok else 'FAIL'}] Test 5: NFP client x CDAP-style "
+          "'For-profit businesses only' fires non_profit_ineligible")
+    print(f"    penalties: {json.dumps(r5['penalties'])}")
+    print()
+
+    # Test 6: Futurpreneur-style wording -- 'NFP and charitable organizations
+    # not eligible' -- should fire non_profit_ineligible against an NFP client.
+    futurpreneur_like_grant = {
+        "grant_id": "test_futurpreneur_like",
+        "program_name": "Futurpreneur-like Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["entrepreneurship"],
+        "exclusions": [
+            "CRITICAL: Loan not a grant -- repayment required",
+            "Entrepreneurs over age 39 not eligible",
+            "NFP and charitable organizations not eligible",
+        ],
+        "eligibility_criteria": [
+            "Entrepreneur must be 18 to 39 years of age",
+            "Business must be for-profit and early stage",
+            "Must work with a Futurpreneur mentor",
+        ],
+        "status": "active",
+        "amount_max": 60000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": True,
+        "validation_warnings": [],
+    }
+    r6 = score_grant(nfp_client, futurpreneur_like_grant)
+    t6_ok = any(p["label"] == "non_profit_ineligible" for p in r6["penalties"])
+    results.append(("Test 6", t6_ok))
+    print(f"[{'PASS' if t6_ok else 'FAIL'}] Test 6: NFP client x Futurpreneur-style "
+          "'NFP and charitable organizations not eligible' fires non_profit_ineligible")
+    print(f"    penalties: {json.dumps(r6['penalties'])}")
     print()
 
     all_passed = all(ok for _, ok in results)
