@@ -263,5 +263,63 @@
     "grant_id": "canada_digital_adoption_program_boost_your_business",
     "validation_warnings": [],
     "founder_age_restriction": null
+  },
+  {
+    "program_name": "United Way Canada Strong Kids Initiative Saskatchewan",
+    "funder": "United Way Saskatoon and Area",
+    "funder_type": "foundation",
+    "grant_type": "program_grant",
+    "is_repayable": false,
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Amount not confirmed. United Way grants vary by chapter and program year. Contact Saskatchewan chapter directly.",
+    "amount_verified": false,
+    "intake_type": "annual",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "SK"
+    ],
+    "sectors": [
+      "youth",
+      "children",
+      "community_development",
+      "education",
+      "Indigenous",
+      "poverty_reduction",
+      "inclusion"
+    ],
+    "organization_types_eligible": [
+      "Registered charities in Saskatchewan",
+      "Non-profit organizations delivering community programs",
+      "Organizations serving vulnerable youth and children"
+    ],
+    "eligibility_criteria": [
+      "Must be a registered charity or non-profit organization in Saskatchewan",
+      "Program must directly benefit children and youth facing barriers",
+      "Must demonstrate measurable community impact",
+      "Must align with United Way focus areas: education, income, and health"
+    ],
+    "exclusions": [
+      "Programs not serving vulnerable or at-risk populations",
+      "Organizations without Saskatchewan operations"
+    ],
+    "stackable": true,
+    "url": "https://unitedwaysaskatoon.ca/",
+    "contact_email": "saskatchewan@unitedway.ca",
+    "contact_phone": null,
+    "status": "verify_required",
+    "last_verified": "2026-04-14",
+    "source_url": "https://unitedwaysaskatoon.ca/",
+    "notes": "PARTIAL DATA: Strong Kids Initiative confirmed as active United Way program nationally. Saskatchewan chapter details and specific grant amounts need verification by contacting United Way Saskatoon directly. Status verify_required. Relevant for Emerge Academy as Indigenous youth serving NFP in Saskatchewan. United Way typically funds established organizations — pre-launch status may be a barrier in year one.",
+    "grant_id": "united_way_canada_strong_kids_initiative_saskatchewan",
+    "founder_age_restriction": null,
+    "validation_warnings": [
+      "amount_unconfirmed - verify before using in client report",
+      "deadline_unknown - verify before using in Tier 1 or Tier 2 classification",
+      "url 'https://unitedwaysaskatoon.ca/' looks like a homepage, not a program page; caller should set status = 'url_unverified'"
+    ]
   }
 ]

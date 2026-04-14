@@ -739,5 +739,117 @@
       "min_age": 18,
       "max_age": 39
     }
+  },
+  {
+    "program_name": "First Nations Finance Authority Financing Program",
+    "funder": "First Nations Finance Authority (FNFA)",
+    "funder_type": "federal",
+    "grant_type": "program_grant",
+    "is_repayable": true,
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Pooled borrowing model. Loan amounts determined by pledged revenues. FNFA provides loans not grants. Interest rates comparable to Ontario government borrowing rates.",
+    "amount_verified": false,
+    "intake_type": "rolling",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "Indigenous",
+      "infrastructure",
+      "community_development",
+      "economic_development",
+      "housing"
+    ],
+    "organization_types_eligible": [
+      "First Nation governments that are FNFA members",
+      "Self-governing First Nations",
+      "Tribal Councils",
+      "Bodies providing services to First Nation communities"
+    ],
+    "eligibility_criteria": [
+      "Must be a recognized First Nation government or FNFA member",
+      "Must have eligible revenues to pledge against financing",
+      "Must meet FNFA governance and financial management standards",
+      "Projects must be for community infrastructure or economic development"
+    ],
+    "exclusions": [
+      "CRITICAL: This is a loan program not a grant — full repayment required",
+      "Not-for-profit organizations not eligible — First Nation governments only",
+      "Emerge Academy and similar NFP organizations are not eligible applicants"
+    ],
+    "stackable": false,
+    "url": "https://fnfa.ca/en/for-first-nations/financing/",
+    "contact_email": null,
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://fnfa.ca/en/",
+    "notes": "DATABASE CORRECTION: The FNFA Community Development Fund listed in original PathGrant reports does not exist. FNFA provides financing to First Nation governments only — not grants to NFP organizations. Will appear in FINANCING section only. Not applicable to Emerge Academy. Relevant only if a client is a First Nation government seeking infrastructure financing.",
+    "grant_id": "first_nations_finance_authority_financing_program",
+    "founder_age_restriction": null,
+    "validation_warnings": []
+  },
+  {
+    "program_name": "ESDC Opportunities Fund for Persons with Disabilities Regional Component",
+    "funder": "Employment and Social Development Canada (ESDC)",
+    "funder_type": "federal",
+    "grant_type": "program_grant",
+    "is_repayable": false,
+    "amount_min": null,
+    "amount_max": 15000000,
+    "amount_notes": "Up to $15,000,000 for projects up to 3 years. Average cost per participant approximately $12,000. Regional component covers 1-2 provinces. National component covers 3+ provinces.",
+    "amount_verified": true,
+    "intake_type": "annual",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "disability",
+      "employment",
+      "skills_training",
+      "entrepreneurship",
+      "inclusion",
+      "workforce_development"
+    ],
+    "organization_types_eligible": [
+      "Non-profit organizations delivering employment programs",
+      "For-profit organizations delivering employment programs",
+      "Indigenous organizations delivering employment programs",
+      "Municipalities and public organizations"
+    ],
+    "eligibility_criteria": [
+      "Must be an organization delivering employment programs to persons with disabilities",
+      "Must demonstrate capacity to serve minimum participant volumes with 60% success rate",
+      "Projects must deliver skills training, self-employment activities, or job placements",
+      "Must have Canada Revenue Agency business number",
+      "Must apply through Grants and Contributions Online Services (GCOS) portal"
+    ],
+    "exclusions": [
+      "CRITICAL: Funds organizations delivering programs — NOT individual entrepreneurs with disabilities",
+      "Individual persons with disabilities cannot apply directly",
+      "Adele and Sacral Solutions cannot apply directly — must access through a funded delivery organization"
+    ],
+    "stackable": true,
+    "url": "https://www.canada.ca/en/employment-social-development/programs/opportunity-fund-disability.html",
+    "contact_email": "ESDC.NA-OPPORTUNITIES.FUND-FONDS.DINTEGRATION.EDSC@hrsdc-rhdcc.gc.ca",
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.canada.ca/en/employment-social-development/programs/opportunity-fund-disability.html",
+    "notes": "IMPORTANT DISTINCTION: This program funds delivery organizations not individual entrepreneurs. An entrepreneur with a disability like thoracic outlet syndrome would access supports through an OF-funded delivery organization in their province. For Sacral Solutions research: find Saskatchewan organizations currently receiving OF funding that support entrepreneurs with disabilities. Currently receiving approximately $100M per year until 2026-2027 fiscal year. Self-employment and entrepreneurship are eligible activities under this program.",
+    "grant_id": "esdc_opportunities_fund_for_persons_with_disabilities",
+    "founder_age_restriction": null,
+    "validation_warnings": [
+      "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
+    ]
   }
 ]

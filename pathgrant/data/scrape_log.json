@@ -163,5 +163,26 @@
     "timestamp": "2026-04-14T21:37:01Z",
     "success": true,
     "grant_id": "futurpreneur_canada_startup_financing_program"
+  },
+  {
+    "source_url": "https://fnfa.ca/en/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T21:49:32Z",
+    "success": true,
+    "grant_id": "first_nations_finance_authority_financing_program"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/employment-social-development/programs/opportunity-fund-disability.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T21:49:32Z",
+    "success": true,
+    "grant_id": "esdc_opportunities_fund_for_persons_with_disabilities"
+  },
+  {
+    "source_url": "https://unitedwaysaskatoon.ca/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T21:49:32Z",
+    "success": true,
+    "grant_id": "united_way_canada_strong_kids_initiative_saskatchewan"
   }
 ]
