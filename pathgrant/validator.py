@@ -36,6 +36,18 @@ ALLOWED_STATUSES: frozenset[str] = frozenset(
     {"active", "expired", "verify_required", "unverified", "url_unverified"}
 )
 
+# grant_type controlled vocabulary. Field is optional on a record; when set
+# it must be one of these values. The matcher groups results by this field.
+ALLOWED_GRANT_TYPES: frozenset[str] = frozenset(
+    {
+        "program_grant",     # funds program operations
+        "wage_subsidy",      # subsidizes employee costs
+        "capital_grant",     # funds physical assets only
+        "sponsorship",       # event or marketing support
+        "research_grant",    # R&D and academic collaboration
+    }
+)
+
 # Minimum number of eligibility criteria per RULE 2.
 MIN_ELIGIBILITY_CRITERIA = 3
 
@@ -133,6 +145,14 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
     status = record.get("status")
     if status is not None and status not in ALLOWED_STATUSES:
         errors.append(f"status '{status}' not in {sorted(ALLOWED_STATUSES)}")
+
+    # grant_type is optional but must be from the controlled vocabulary
+    # when set. Used by the matcher to group output into sections.
+    grant_type = record.get("grant_type")
+    if grant_type is not None and grant_type not in ALLOWED_GRANT_TYPES:
+        errors.append(
+            f"grant_type '{grant_type}' not in {sorted(ALLOWED_GRANT_TYPES)}"
+        )
 
     # eligibility_criteria minimum count (RULE 2).
     criteria = record.get("eligibility_criteria")

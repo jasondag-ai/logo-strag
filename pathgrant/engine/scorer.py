@@ -195,6 +195,7 @@ def score_grant(
     result_shell = {
         "grant_id": grant_id,
         "program_name": program_name,
+        "grant_type": grant.get("grant_type") or "program_grant",
         "score": 0,
         "signals": signals,
         "penalties": penalties,

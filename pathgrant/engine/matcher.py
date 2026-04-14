@@ -32,6 +32,25 @@ from engine.scorer import score_grant  # noqa: E402
 DEFAULT_VERIFIED_PATH = _PATHGRANT_ROOT / "data" / "grants_verified.json"
 
 
+# Display order for grouped matcher output. Any grant_type not listed here
+# is treated as a trailing "OTHER" section so no record is silently dropped.
+GRANT_TYPE_SECTION_ORDER: tuple[str, ...] = (
+    "program_grant",
+    "wage_subsidy",
+    "capital_grant",
+    "sponsorship",
+    "research_grant",
+)
+
+GRANT_TYPE_SECTION_LABELS: dict[str, str] = {
+    "program_grant": "PROGRAM GRANTS (ranked)",
+    "wage_subsidy": "WAGE SUBSIDIES (ranked separately)",
+    "capital_grant": "CAPITAL GRANTS (ranked separately)",
+    "sponsorship": "SPONSORSHIPS (ranked separately)",
+    "research_grant": "RESEARCH GRANTS (ranked separately)",
+}
+
+
 def load_client_profile(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -55,6 +74,29 @@ def match(
         key=lambda r: (r.get("eliminator") is not None, -r["score"])
     )
     return scored
+
+
+def group_by_grant_type(
+    ranked: list[dict[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Bucket a ranked list into sections keyed by grant_type.
+
+    Preserves the input ordering within each bucket, so the highest-scoring
+    record in a section is first. Grant types not listed in
+    GRANT_TYPE_SECTION_ORDER fall into a trailing 'other' bucket so nothing
+    is silently dropped.
+    """
+    groups: dict[str, list[dict[str, Any]]] = {
+        gt: [] for gt in GRANT_TYPE_SECTION_ORDER
+    }
+    groups["other"] = []
+    for result in ranked:
+        gt = result.get("grant_type") or "program_grant"
+        if gt in groups:
+            groups[gt].append(result)
+        else:
+            groups["other"].append(result)
+    return groups
 
 
 def _format_match(rank: int, result: dict[str, Any]) -> str:
@@ -83,14 +125,18 @@ def _cli() -> None:
     parser = argparse.ArgumentParser(description="Match grants against a client profile")
     parser.add_argument("--client", required=True, type=Path)
     parser.add_argument("--grants", type=Path, default=DEFAULT_VERIFIED_PATH)
-    parser.add_argument("--top", type=int, default=None)
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=None,
+        help="Limit each grant_type section to the top N within the section",
+    )
     args = parser.parse_args()
 
     client = load_client_profile(args.client)
     grants = load_grants(args.grants)
     ranked = match(client, grants)
-    if args.top is not None:
-        ranked = ranked[: args.top]
+    groups = group_by_grant_type(ranked)
 
     print(
         f"Client: {client.get('organization_name')} "
@@ -104,15 +150,24 @@ def _cli() -> None:
     )
     print(f"Sectors: {client.get('sectors')}")
     print(f"Grants source: {args.grants}  ({len(grants)} records)")
-    print(
-        f"Showing {'top ' + str(args.top) if args.top else 'all'} "
-        f"of {len(grants)} ranked by score:"
-    )
+    print("Grouped by grant_type:")
     print()
 
-    for i, r in enumerate(ranked, 1):
-        print(_format_match(i, r))
+    section_order = list(GRANT_TYPE_SECTION_ORDER) + ["other"]
+    for gt in section_order:
+        section = groups.get(gt, [])
+        if not section:
+            continue
+        if args.top is not None:
+            section = section[: args.top]
+        label = GRANT_TYPE_SECTION_LABELS.get(gt, f"OTHER ({gt})")
+        print("=" * 70)
+        print(f"{label}   [{len(section)} record(s)]")
+        print("=" * 70)
         print()
+        for i, r in enumerate(section, 1):
+            print(_format_match(i, r))
+            print()
 
 
 if __name__ == "__main__":
