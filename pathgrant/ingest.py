@@ -151,23 +151,36 @@ def ingest_grant(
         encoding="utf-8",
     )
 
-    # 3. Dedupe check -- all three destination files.
+    # 3. Dedupe check. check_duplicate scans verified + unverified. We scan
+    #    the expired file inline since check_duplicate does not know about
+    #    it. Under the soft-collision policy, grant_id match in any file is
+    #    a hard duplicate; url match with a different grant_id is a soft
+    #    collision that gets surfaced via validation_warnings rather than
+    #    blocking the insert.
     dedupe_result = check_duplicate(record, verified_path, unverified_path)
     if not dedupe_result.get("duplicate"):
         for candidate in _load_json_array(expired_path):
-            matched_on: str | None = None
             if candidate.get("grant_id") == grant_id:
-                matched_on = "grant_id"
-            elif record.get("url") and candidate.get("url") == record.get("url"):
-                matched_on = "url"
-            if matched_on:
                 dedupe_result = {
                     "duplicate": True,
-                    "matched_on": matched_on,
+                    "matched_on": "grant_id",
                     "existing_record": candidate.get("grant_id"),
                     "matched_in": "expired",
                 }
-                break
+                break  # hard block; nothing else can change this
+            if (
+                record.get("url")
+                and candidate.get("url") == record.get("url")
+                and not dedupe_result.get("url_collision")
+            ):
+                dedupe_result = {
+                    "duplicate": False,
+                    "url_collision": True,
+                    "matched_on": "url",
+                    "existing_record": candidate.get("grant_id"),
+                    "matched_in": "expired",
+                }
+                # keep scanning: a later grant_id match would still block
 
     # 4. Validate.
     validation = validate_grant(record)
@@ -182,6 +195,15 @@ def ingest_grant(
 
     persisted = dict(record)
     persisted["validation_warnings"] = list(validation["warnings"])
+
+    # Surface url_collision as a durable warning so downstream consumers of
+    # the database files know two programs share a source URL and need a
+    # manual check. The warning is appended, not replacing existing warnings.
+    if dedupe_result.get("url_collision"):
+        persisted["validation_warnings"].append(
+            "url_collision - multiple programs share this source URL, "
+            "verify these are distinct programs"
+        )
 
     # Stamp time_sensitive / time_sensitive_note for grants whose close date
     # is inside the 60-day window. Records that do not qualify are not
@@ -221,6 +243,9 @@ def ingest_grant(
         "success": True,
         "grant_id": grant_id,
     }
+    if dedupe_result.get("url_collision"):
+        log_entry["url_collision"] = True
+        log_entry["url_collision_with"] = dedupe_result.get("existing_record")
     _append_json_array(scrape_log_path, log_entry)
 
     try:

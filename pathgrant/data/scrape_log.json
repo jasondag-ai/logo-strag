@@ -89,5 +89,23 @@
     "timestamp": "2026-04-14T19:43:27Z",
     "success": true,
     "grant_id": "saskatchewan_mmiwg_plus_community_response_fund"
+  },
+  {
+    "source_url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:51:46Z",
+    "success": true,
+    "grant_id": "saskatchewan_first_nations_and_metis_sponsorships",
+    "url_collision": true,
+    "url_collision_with": "saskatchewan_first_nations_and_metis_community_partnership"
+  },
+  {
+    "source_url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:51:46Z",
+    "success": true,
+    "grant_id": "saskatchewan_mmiwg_plus_community_response_fund",
+    "url_collision": true,
+    "url_collision_with": "saskatchewan_first_nations_and_metis_community_partnership"
   }
 ]

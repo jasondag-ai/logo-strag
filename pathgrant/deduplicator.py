@@ -86,10 +86,23 @@ def check_duplicate(
 ) -> dict[str, Any]:
     """Check whether `record` duplicates an existing grant in either file.
 
-    Returns:
-        {"duplicate": True,  "matched_on": "grant_id" | "url",
+    Two outcomes:
+
+    - grant_id exact match -> hard duplicate, the caller must not insert:
+        {"duplicate": True,  "matched_on": "grant_id",
          "existing_record": <grant_id of the match>}
-        or
+
+    - url exact match with a DIFFERENT grant_id -> soft collision, the
+      caller SHOULD still insert the record but must also surface the
+      collision via validation_warnings. Shared source URLs are common
+      for government announcements that cover several distinct programs
+      on the same page, so a url match on its own is not enough evidence
+      that the records are the same program.
+        {"duplicate": False, "url_collision": True,
+         "matched_on": "url",
+         "existing_record": <grant_id of the match>}
+
+    - no match:
         {"duplicate": False}
     """
     existing: list[dict[str, Any]] = []
@@ -99,7 +112,8 @@ def check_duplicate(
     new_grant_id = record.get("grant_id")
     new_url = record.get("url")
 
-    # Pass 1: grant_id exact match takes priority.
+    # Pass 1: grant_id exact match is a hard duplicate. This is the only
+    # hard block; everything else proceeds to insert.
     if new_grant_id:
         for candidate in existing:
             if candidate.get("grant_id") == new_grant_id:
@@ -109,12 +123,15 @@ def check_duplicate(
                     "existing_record": candidate.get("grant_id"),
                 }
 
-    # Pass 2: url exact match.
+    # Pass 2: url exact match with a different grant_id is a collision,
+    # not a duplicate. (url match with the same grant_id would already
+    # have been caught above in pass 1.)
     if new_url:
         for candidate in existing:
             if candidate.get("url") == new_url:
                 return {
-                    "duplicate": True,
+                    "duplicate": False,
+                    "url_collision": True,
                     "matched_on": "url",
                     "existing_record": candidate.get("grant_id"),
                 }
@@ -174,15 +191,20 @@ def _run_tests() -> None:
         print(f"    second insert: {r1b}")
         print()
 
-        # ---- Test 2: same url, different grant_id ----
+        # ---- Test 2: same url, different grant_id => url_collision ----
+        # Under the soft-collision policy this is NOT a hard duplicate.
+        # check_duplicate must return duplicate=False with url_collision=True
+        # so the caller (ingest.py) can add a url_collision warning to the
+        # record's validation_warnings and proceed with the insert.
         r2 = check_duplicate(record_a_dup_url, verified, unverified)
         ok_2 = (
-            r2.get("duplicate") is True
+            r2.get("duplicate") is False
+            and r2.get("url_collision") is True
             and r2.get("matched_on") == "url"
             and r2.get("existing_record") == record_a["grant_id"]
         )
-        results.append(("Test 2: duplicate url, new grant_id", ok_2))
-        print(f"[{'PASS' if ok_2 else 'FAIL'}] Test 2: duplicate url, new grant_id")
+        results.append(("Test 2: url collision, new grant_id", ok_2))
+        print(f"[{'PASS' if ok_2 else 'FAIL'}] Test 2: url collision, new grant_id")
         print(f"    result: {r2}")
         print()
 

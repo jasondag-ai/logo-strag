@@ -380,5 +380,104 @@
     ],
     "time_sensitive": true,
     "time_sensitive_note": "Deadline 2026-05-31 is 47 days away (within 60-day window; current date 2026-04-14)"
+  },
+  {
+    "program_name": "Saskatchewan First Nations and Metis Sponsorships",
+    "funder": "Government of Saskatchewan — First Nations Metis and Northern Affairs",
+    "funder_type": "provincial",
+    "amount_min": null,
+    "amount_max": 400000,
+    "amount_notes": "Total pool is $400,000 shared across all recipients. Individual amounts not stated. Rolling until funding allotted.",
+    "amount_verified": false,
+    "intake_type": "rolling",
+    "intake_open_date": "2026-04-02",
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "SK"
+    ],
+    "sectors": [
+      "Indigenous",
+      "culture",
+      "reconciliation",
+      "education",
+      "employment",
+      "veterans",
+      "community_development"
+    ],
+    "organization_types_eligible": [
+      "Organizations hosting public events that benefit Indigenous people in Saskatchewan",
+      "First Nations and Metis community organizations",
+      "Organizations promoting reconciliation and cultural understanding"
+    ],
+    "eligibility_criteria": [
+      "Must support public events that promote reconciliation and cultural understanding",
+      "Events must benefit Indigenous people in education, employment, professional development, cultural celebrations, or that honour veterans and Elders",
+      "Must benefit Indigenous people and communities in Saskatchewan",
+      "Application submitted to First Nations Metis and Northern Relations unit"
+    ],
+    "exclusions": [],
+    "stackable": true,
+    "url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+    "contact_email": "fnmr@gov.sk.ca",
+    "contact_phone": "306-787-4081",
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+    "notes": "NEW DISCOVERY: Announced April 2 2026. Not in any prior PathGrant database. Rolling intake until funding allotted — apply early. Sponsorship focus means Emerge Academy could apply for a launch event, opening ceremony, or community celebration. Partial fit — not core program funding but useful for launch-related costs. Contact fnmr@gov.sk.ca for full guidelines.",
+    "grant_id": "saskatchewan_first_nations_and_metis_sponsorships",
+    "validation_warnings": [
+      "amount_unconfirmed - verify before using in client report",
+      "url_collision - multiple programs share this source URL, verify these are distinct programs"
+    ]
+  },
+  {
+    "program_name": "Saskatchewan MMIWG Plus Community Response Fund",
+    "funder": "Government of Saskatchewan and Women and Gender Equality Canada",
+    "funder_type": "provincial",
+    "amount_min": null,
+    "amount_max": 40000,
+    "amount_notes": "Up to $40,000 per project. Total pool $800,000. Half funded by Women and Gender Equality Canada.",
+    "amount_verified": true,
+    "intake_type": "rolling",
+    "intake_open_date": "2026-04-02",
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "SK"
+    ],
+    "sectors": [
+      "Indigenous",
+      "women",
+      "safety",
+      "community_development",
+      "MMIWG"
+    ],
+    "organization_types_eligible": [
+      "Organizations serving Indigenous women, girls, Two-Spirit+ people in Saskatchewan",
+      "Community organizations focused on MMIWG awareness and response"
+    ],
+    "eligibility_criteria": [
+      "Projects must focus on awareness, safety and empowerment for Indigenous women, girls, Two-Spirit+ people",
+      "Must serve families and communities of MMIWG+ in Saskatchewan",
+      "Must align with MMIWG+ awareness or community response mandate"
+    ],
+    "exclusions": [
+      "DOES NOT APPLY to Emerge Academy: Program exclusively serves Indigenous women, girls, and Two-Spirit+ people. Emerge Academy serves male youth under 15."
+    ],
+    "stackable": true,
+    "url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+    "contact_email": "fnmr@gov.sk.ca",
+    "contact_phone": "306-787-4081",
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
+    "notes": "NOT APPLICABLE to Emerge Academy — explicitly serves Indigenous women, girls, Two-Spirit+ people only. Emerge Academy is male youth U15. Include in database for other clients but exclude from Emerge Academy matching. Rolling intake until funding allotted.",
+    "grant_id": "saskatchewan_mmiwg_plus_community_response_fund",
+    "validation_warnings": [
+      "url_collision - multiple programs share this source URL, verify these are distinct programs"
+    ]
   }
 ]
