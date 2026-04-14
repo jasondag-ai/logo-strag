@@ -1,0 +1,50 @@
+{
+  "program_name": "Community Initiatives Fund of Saskatchewan Community Grant Program",
+  "funder": "Community Initiatives Fund of Saskatchewan (CIF)",
+  "funder_type": "provincial",
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "Amount not confirmed from source. TBD.",
+  "amount_verified": false,
+  "intake_type": "biannual",
+  "intake_open_date": null,
+  "intake_close_date": "2026-10-01",
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "SK"
+  ],
+  "sectors": [
+    "youth",
+    "education",
+    "recreation",
+    "Indigenous",
+    "community_development",
+    "children",
+    "nonprofit_capacity"
+  ],
+  "organization_types_eligible": [
+    "Incorporated Saskatchewan nonprofit organization in good standing with ISC",
+    "Municipality or First Nation proposing community-based community-led programs",
+    "Health region, school or school board for community-based programs"
+  ],
+  "eligibility_criteria": [
+    "Must be incorporated Saskatchewan nonprofit in good standing with Information Services Corporation (ISC)",
+    "Primary purpose must be to benefit Saskatchewan communities",
+    "Program must align with CIF funding themes: children and youth development, or nonprofit capacity building",
+    "Community programs for youth facing financial, accessibility or other barriers receive higher priority",
+    "Programs must result in children and youth being physically literate and physically active"
+  ],
+  "exclusions": [
+    "Organizations not in good standing with CIF (outstanding reports or repayments)"
+  ],
+  "stackable": true,
+  "url": "https://www.cifsask.org/grants/community-grant-program/",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.cifsask.org/grants/community-grant-program/",
+  "notes": "NEW DISCOVERY: This program was not in the original PathGrant database. High relevance for Saskatchewan Indigenous youth sport organizations. Next deadline October 1 2026 — actionable for Emerge Academy. April 1 2026 deadline already passed. Biannual intake (April and October). Amounts TBD — need manual verification from CIF program guidelines. Saskatchewan-specific and well-aligned with Emerge Academy mandate.",
+  "grant_id": "community_initiatives_fund_of_saskatchewan_community_grant"
+}

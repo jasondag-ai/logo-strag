@@ -1,0 +1,60 @@
+{
+  "program_name": "RBC Foundation Community Investments Canada",
+  "funder": "RBC Foundation / Royal Bank of Canada",
+  "funder_type": "corporate",
+  "amount_min": null,
+  "amount_max": 500000,
+  "amount_notes": "Up to $500,000 per year for up to 5 years ($2.5M maximum). Typically funds no more than 20% of organization operating budget. Audited financials required for requests over $50,000. Seed funding exceptions for organizations under 5 years old.",
+  "amount_verified": true,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "ALL"
+  ],
+  "sectors": [
+    "education",
+    "employment",
+    "youth",
+    "inclusion",
+    "environment",
+    "Indigenous",
+    "community_development"
+  ],
+  "organization_types_eligible": [
+    "Registered charities or other qualified donees in Canada (RBC Foundation)",
+    "Registered charities, qualified donees, and non-profit organizations in communities where RBC has business presence (RBC direct)",
+    "Organizations at different sizes and stages considered"
+  ],
+  "eligibility_criteria": [
+    "Must be registered charity, qualified donee, or non-profit organization in Canada",
+    "Must operate in community where RBC has a business presence",
+    "Must have clear and measurable goals with demonstrated community impact",
+    "Must have strong financial management, multiple funding sources, and independent Board of Directors",
+    "Project must align with RBC ambitions: net-zero transition, skills for future, inclusive prosperity"
+  ],
+  "exclusions": [
+    "CRITICAL: Sports teams explicitly excluded unless they are a qualified donee",
+    "Individuals",
+    "Political organizations or parties",
+    "Private or corporate foundations",
+    "Private fee-based elementary or secondary schools",
+    "Trade associations, advocacy organizations, chambers of commerce",
+    "Religious or sectarian programs",
+    "Endowment or memorial campaigns",
+    "Golf tournaments",
+    "Travel-related costs or events",
+    "Theoretical research"
+  ],
+  "stackable": null,
+  "url": "https://www.rbc.com/our-impact/apply-for-funding/index.html",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.rbc.com/our-impact/apply-for-funding/index.html",
+  "notes": "IMPORTANT: The RBC Foundation Indigenous Youth Leadership Program listed in prior PathGrant reports does not exist as a standalone program. This is the actual RBC Foundation grant program. ELIGIBILITY RISK: Sports teams explicitly excluded unless qualified donee. Emerge Academy as a hockey academy may be classified as a sports team. Application must frame organization as education and Indigenous youth development NFP, not as a sports team. Rolling intake. No published deadline.",
+  "grant_id": "rbc_foundation_community_investments_canada"
+}

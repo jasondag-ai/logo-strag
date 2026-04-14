@@ -1,0 +1,47 @@
+{
+  "program_name": "Cameco Northern Saskatchewan Community Investment",
+  "funder": "Cameco Corporation",
+  "funder_type": "corporate",
+  "amount_min": null,
+  "amount_max": null,
+  "amount_notes": "Amount not publicly stated per application. Reviewed case by case. Historical grants range from small sponsorships to $250,000+ for major initiatives.",
+  "amount_verified": false,
+  "intake_type": "rolling",
+  "intake_open_date": null,
+  "intake_close_date": null,
+  "decision_weeks_min": null,
+  "decision_weeks_max": null,
+  "provinces_eligible": [
+    "SK"
+  ],
+  "sectors": [
+    "youth",
+    "education",
+    "recreation",
+    "Indigenous",
+    "health",
+    "community_development",
+    "sport"
+  ],
+  "organization_types_eligible": [
+    "Community organizations in northern Saskatchewan",
+    "Organizations serving Indigenous youth in northern SK communities",
+    "Nonprofits and charities operating near Cameco operations"
+  ],
+  "eligibility_criteria": [
+    "Must operate in or near communities where Cameco has operations in northern Saskatchewan",
+    "Priority given to initiatives that promote youth activities in education, recreation, or health",
+    "Must submit request online through Cameco community investment portal",
+    "Must demonstrate community benefit with measurable outcomes"
+  ],
+  "exclusions": [],
+  "stackable": true,
+  "url": "https://www.cameconorth.com/community/funding",
+  "contact_email": null,
+  "contact_phone": null,
+  "status": "active",
+  "last_verified": "2026-04-14",
+  "source_url": "https://www.cameconorth.com/community/funding",
+  "notes": "GEOGRAPHIC RISK FOR EMERGE ACADEMY: Cameco operations are primarily in northern Saskatchewan (Cigar Lake, McArthur River). Langenburg SK is in eastern SK, not northern SK. Geographic eligibility needs verification before recommending. The Cameco Foundation listed in prior PathGrant reports appears to be a confusion between this program and the Cameco Fund for Mental Health (which is mental health focused only). No standalone Cameco Foundation grants program for sport confirmed.",
+  "grant_id": "cameco_northern_saskatchewan_community_investment"
+}

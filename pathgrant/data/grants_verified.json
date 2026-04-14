@@ -157,5 +157,162 @@
     "source_url": "https://sasksport.ca/funding-opportunities/funding-and-grants/indigenous-sport-community-grant/",
     "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Minimum one year of operation required. Emerge Academy is pre-launch. May not qualify until after first year of operations. Saskatchewan-specific. Highly relevant sector alignment. Contact Garett Mathiason at Sask Sport to confirm pre-launch eligibility. Amount is modest ($1K-$5K) but stackable and SK-specific.",
     "grant_id": "sask_sport_indigenous_community_sport_development_grant"
+  },
+  {
+    "program_name": "RBC Foundation Community Investments Canada",
+    "funder": "RBC Foundation / Royal Bank of Canada",
+    "funder_type": "corporate",
+    "amount_min": null,
+    "amount_max": 500000,
+    "amount_notes": "Up to $500,000 per year for up to 5 years ($2.5M maximum). Typically funds no more than 20% of organization operating budget. Audited financials required for requests over $50,000. Seed funding exceptions for organizations under 5 years old.",
+    "amount_verified": true,
+    "intake_type": "rolling",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "education",
+      "employment",
+      "youth",
+      "inclusion",
+      "environment",
+      "Indigenous",
+      "community_development"
+    ],
+    "organization_types_eligible": [
+      "Registered charities or other qualified donees in Canada (RBC Foundation)",
+      "Registered charities, qualified donees, and non-profit organizations in communities where RBC has business presence (RBC direct)",
+      "Organizations at different sizes and stages considered"
+    ],
+    "eligibility_criteria": [
+      "Must be registered charity, qualified donee, or non-profit organization in Canada",
+      "Must operate in community where RBC has a business presence",
+      "Must have clear and measurable goals with demonstrated community impact",
+      "Must have strong financial management, multiple funding sources, and independent Board of Directors",
+      "Project must align with RBC ambitions: net-zero transition, skills for future, inclusive prosperity"
+    ],
+    "exclusions": [
+      "CRITICAL: Sports teams explicitly excluded unless they are a qualified donee",
+      "Individuals",
+      "Political organizations or parties",
+      "Private or corporate foundations",
+      "Private fee-based elementary or secondary schools",
+      "Trade associations, advocacy organizations, chambers of commerce",
+      "Religious or sectarian programs",
+      "Endowment or memorial campaigns",
+      "Golf tournaments",
+      "Travel-related costs or events",
+      "Theoretical research"
+    ],
+    "stackable": null,
+    "url": "https://www.rbc.com/our-impact/apply-for-funding/index.html",
+    "contact_email": null,
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.rbc.com/our-impact/apply-for-funding/index.html",
+    "notes": "IMPORTANT: The RBC Foundation Indigenous Youth Leadership Program listed in prior PathGrant reports does not exist as a standalone program. This is the actual RBC Foundation grant program. ELIGIBILITY RISK: Sports teams explicitly excluded unless qualified donee. Emerge Academy as a hockey academy may be classified as a sports team. Application must frame organization as education and Indigenous youth development NFP, not as a sports team. Rolling intake. No published deadline.",
+    "grant_id": "rbc_foundation_community_investments_canada"
+  },
+  {
+    "program_name": "Cameco Northern Saskatchewan Community Investment",
+    "funder": "Cameco Corporation",
+    "funder_type": "corporate",
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Amount not publicly stated per application. Reviewed case by case. Historical grants range from small sponsorships to $250,000+ for major initiatives.",
+    "amount_verified": false,
+    "intake_type": "rolling",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "SK"
+    ],
+    "sectors": [
+      "youth",
+      "education",
+      "recreation",
+      "Indigenous",
+      "health",
+      "community_development",
+      "sport"
+    ],
+    "organization_types_eligible": [
+      "Community organizations in northern Saskatchewan",
+      "Organizations serving Indigenous youth in northern SK communities",
+      "Nonprofits and charities operating near Cameco operations"
+    ],
+    "eligibility_criteria": [
+      "Must operate in or near communities where Cameco has operations in northern Saskatchewan",
+      "Priority given to initiatives that promote youth activities in education, recreation, or health",
+      "Must submit request online through Cameco community investment portal",
+      "Must demonstrate community benefit with measurable outcomes"
+    ],
+    "exclusions": [],
+    "stackable": true,
+    "url": "https://www.cameconorth.com/community/funding",
+    "contact_email": null,
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.cameconorth.com/community/funding",
+    "notes": "GEOGRAPHIC RISK FOR EMERGE ACADEMY: Cameco operations are primarily in northern Saskatchewan (Cigar Lake, McArthur River). Langenburg SK is in eastern SK, not northern SK. Geographic eligibility needs verification before recommending. The Cameco Foundation listed in prior PathGrant reports appears to be a confusion between this program and the Cameco Fund for Mental Health (which is mental health focused only). No standalone Cameco Foundation grants program for sport confirmed.",
+    "grant_id": "cameco_northern_saskatchewan_community_investment"
+  },
+  {
+    "program_name": "Community Initiatives Fund of Saskatchewan Community Grant Program",
+    "funder": "Community Initiatives Fund of Saskatchewan (CIF)",
+    "funder_type": "provincial",
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Amount not confirmed from source. TBD.",
+    "amount_verified": false,
+    "intake_type": "biannual",
+    "intake_open_date": null,
+    "intake_close_date": "2026-10-01",
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "SK"
+    ],
+    "sectors": [
+      "youth",
+      "education",
+      "recreation",
+      "Indigenous",
+      "community_development",
+      "children",
+      "nonprofit_capacity"
+    ],
+    "organization_types_eligible": [
+      "Incorporated Saskatchewan nonprofit organization in good standing with ISC",
+      "Municipality or First Nation proposing community-based community-led programs",
+      "Health region, school or school board for community-based programs"
+    ],
+    "eligibility_criteria": [
+      "Must be incorporated Saskatchewan nonprofit in good standing with Information Services Corporation (ISC)",
+      "Primary purpose must be to benefit Saskatchewan communities",
+      "Program must align with CIF funding themes: children and youth development, or nonprofit capacity building",
+      "Community programs for youth facing financial, accessibility or other barriers receive higher priority",
+      "Programs must result in children and youth being physically literate and physically active"
+    ],
+    "exclusions": [
+      "Organizations not in good standing with CIF (outstanding reports or repayments)"
+    ],
+    "stackable": true,
+    "url": "https://www.cifsask.org/grants/community-grant-program/",
+    "contact_email": null,
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.cifsask.org/grants/community-grant-program/",
+    "notes": "NEW DISCOVERY: This program was not in the original PathGrant database. High relevance for Saskatchewan Indigenous youth sport organizations. Next deadline October 1 2026 — actionable for Emerge Academy. April 1 2026 deadline already passed. Biannual intake (April and October). Amounts TBD — need manual verification from CIF program guidelines. Saskatchewan-specific and well-aligned with Emerge Academy mandate.",
+    "grant_id": "community_initiatives_fund_of_saskatchewan_community_grant"
   }
 ]

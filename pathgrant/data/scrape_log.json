@@ -47,5 +47,26 @@
     "timestamp": "2026-04-14T19:23:38Z",
     "success": true,
     "grant_id": "saskculture_metis_cultural_development_fund"
+  },
+  {
+    "source_url": "https://www.rbc.com/our-impact/apply-for-funding/index.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:34:08Z",
+    "success": true,
+    "grant_id": "rbc_foundation_community_investments_canada"
+  },
+  {
+    "source_url": "https://www.cameconorth.com/community/funding",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:34:08Z",
+    "success": true,
+    "grant_id": "cameco_northern_saskatchewan_community_investment"
+  },
+  {
+    "source_url": "https://www.cifsask.org/grants/community-grant-program/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T19:34:09Z",
+    "success": true,
+    "grant_id": "community_initiatives_fund_of_saskatchewan_community_grant"
   }
 ]
