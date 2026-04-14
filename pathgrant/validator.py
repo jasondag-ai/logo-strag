@@ -45,6 +45,7 @@ ALLOWED_GRANT_TYPES: frozenset[str] = frozenset(
         "capital_grant",     # funds physical assets only
         "sponsorship",       # event or marketing support
         "research_grant",    # R&D and academic collaboration
+        "tax_credit",        # federal/provincial tax credit program (SR&ED etc.)
     }
 )
 

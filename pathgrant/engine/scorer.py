@@ -524,6 +524,82 @@ def _run_tests() -> None:
     print(f"    penalties: {json.dumps(r6['penalties'])}")
     print()
 
+    # Test 7: tax_credit grant_type must route to the TAX CREDITS section and
+    # NEVER into PROGRAM GRANTS. Cross-module test against
+    # matcher.group_by_grant_type to prove the end-to-end flow: scorer echoes
+    # grant_type into the result, matcher routes on that field.
+    tax_credit_grant = {
+        "grant_id": "test_sred_like",
+        "program_name": "SR&ED-like Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["technology", "innovation", "RD"],
+        "exclusions": [],
+        "eligibility_criteria": [
+            "Must be an incorporated Canadian business",
+            "Must conduct scientific research or experimental development",
+            "Must file a T661 claim form with CRA",
+        ],
+        "status": "active",
+        "amount_max": 500000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": True,
+        "validation_warnings": [],
+        "grant_type": "tax_credit",
+        "is_repayable": False,
+    }
+    program_grant_comparison = {
+        "grant_id": "test_program_grant_comparison",
+        "program_name": "Program Grant Test",
+        "provinces_eligible": ["SK"],
+        "sectors": ["technology"],
+        "exclusions": [],
+        "eligibility_criteria": [
+            "Must be a Canadian organization",
+            "Must have a project",
+            "Must submit an application",
+        ],
+        "status": "active",
+        "amount_max": 50000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": True,
+        "validation_warnings": [],
+        "grant_type": "program_grant",
+        "is_repayable": False,
+    }
+    r7_tc = score_grant(for_profit_client, tax_credit_grant)
+    r7_pg = score_grant(for_profit_client, program_grant_comparison)
+    scorer_ok = (
+        r7_tc["grant_type"] == "tax_credit"
+        and r7_pg["grant_type"] == "program_grant"
+    )
+    # Import matcher as a sibling module. When scorer.py runs as __main__,
+    # pathgrant/engine/ is sys.path[0], so matcher.py is directly importable
+    # without going through the 'engine.matcher' dotted path.
+    from matcher import group_by_grant_type  # noqa: E402
+    groups = group_by_grant_type([r7_tc, r7_pg])
+    routing_ok = (
+        any(g["grant_id"] == "test_sred_like" for g in groups["tax_credit"])
+        and not any(g["grant_id"] == "test_sred_like" for g in groups["program_grant"])
+        and any(g["grant_id"] == "test_program_grant_comparison" for g in groups["program_grant"])
+    )
+    t7_ok = scorer_ok and routing_ok
+    results.append(("Test 7", t7_ok))
+    print(f"[{'PASS' if t7_ok else 'FAIL'}] Test 7: tax_credit grant_type routes to "
+          "TAX CREDITS bucket, never to PROGRAM GRANTS")
+    print(f"    scorer_ok : {scorer_ok} (grant_type fields echoed correctly)")
+    print(f"    routing_ok: {routing_ok} (matcher.group_by_grant_type placement)")
+    print(
+        f"    tax_credit bucket : "
+        f"{[g['grant_id'] for g in groups['tax_credit']]}"
+    )
+    print(
+        f"    program_grant bucket : "
+        f"{[g['grant_id'] for g in groups['program_grant']]}"
+    )
+    print()
+
     all_passed = all(ok for _, ok in results)
     print("=" * 60)
     print("ALL TESTS PASSED" if all_passed else "ONE OR MORE TESTS FAILED")

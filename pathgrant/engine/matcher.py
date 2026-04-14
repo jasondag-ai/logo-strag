@@ -32,14 +32,15 @@ from engine.scorer import score_grant  # noqa: E402
 DEFAULT_VERIFIED_PATH = _PATHGRANT_ROOT / "data" / "grants_verified.json"
 
 
-# Display order for grouped matcher output. Any grant_type not listed here
-# is treated as a trailing "OTHER" section so no record is silently dropped.
+# Grant_type buckets used by group_by_grant_type. Order here does NOT
+# drive display order -- see SECTION_DISPLAY_ORDER below for that.
 GRANT_TYPE_SECTION_ORDER: tuple[str, ...] = (
     "program_grant",
     "wage_subsidy",
     "capital_grant",
     "sponsorship",
     "research_grant",
+    "tax_credit",
 )
 
 # Synthetic section key for repayable-instrument records. is_repayable=True
@@ -48,12 +49,29 @@ GRANT_TYPE_SECTION_ORDER: tuple[str, ...] = (
 # non-repayable grant and should never compete in the grant rankings.
 FINANCING_SECTION_KEY = "financing"
 
+# Display order for grouped matcher output: normal grant_type buckets
+# first, then any records whose grant_type was outside the vocabulary,
+# then the two terminal sections -- FINANCING (repayable instruments,
+# bypasses grant_type routing) and TAX CREDITS (tax-credit grant_type).
+# TAX CREDITS sits after FINANCING per operator spec.
+SECTION_DISPLAY_ORDER: tuple[str, ...] = (
+    "program_grant",
+    "wage_subsidy",
+    "capital_grant",
+    "sponsorship",
+    "research_grant",
+    "other",
+    FINANCING_SECTION_KEY,
+    "tax_credit",
+)
+
 GRANT_TYPE_SECTION_LABELS: dict[str, str] = {
     "program_grant": "PROGRAM GRANTS (ranked)",
     "wage_subsidy": "WAGE SUBSIDIES (ranked separately)",
     "capital_grant": "CAPITAL GRANTS (ranked separately)",
     "sponsorship": "SPONSORSHIPS (ranked separately)",
     "research_grant": "RESEARCH GRANTS (ranked separately)",
+    "tax_credit": "TAX CREDITS (ranked separately)",
     FINANCING_SECTION_KEY: "FINANCING (repayable, separate from grant rankings)",
 }
 
@@ -167,7 +185,7 @@ def _cli() -> None:
     print("Grouped by grant_type:")
     print()
 
-    section_order = list(GRANT_TYPE_SECTION_ORDER) + ["other", FINANCING_SECTION_KEY]
+    section_order = list(SECTION_DISPLAY_ORDER)
     for gt in section_order:
         section = groups.get(gt, [])
         if not section:
