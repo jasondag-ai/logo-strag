@@ -139,6 +139,33 @@ def validate_grant(record: dict[str, Any]) -> dict[str, Any]:
                 "amount_verified is true but amount_min and amount_max are both null"
             )
 
+    # Data-confidence warning: unverified amounts with ambiguous or missing
+    # notes should be surfaced so the operator knows to follow up, but the
+    # record is still structurally valid.
+    if record.get("amount_verified") is False:
+        notes = record.get("amount_notes")
+        notes_lc = (notes or "").lower()
+        if (
+            notes is None
+            or "tbd" in notes_lc
+            or "not confirmed" in notes_lc
+        ):
+            warnings.append(
+                "amount_unconfirmed - verify before using in client report"
+            )
+
+    # Deadline-unknown warning: a non-rolling intake with neither an open
+    # nor a close date cannot be slotted into a Tier 1 / Tier 2 decision
+    # window without a manual check.
+    if record.get("intake_type") != "rolling":
+        if (
+            record.get("intake_open_date") is None
+            and record.get("intake_close_date") is None
+        ):
+            warnings.append(
+                "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
+            )
+
     # Homepage URL heuristic -- warning, not hard fail (RULE 1).
     url = record.get("url")
     if isinstance(url, str) and url and _looks_like_homepage(url):
@@ -169,11 +196,11 @@ def _run_tests() -> None:
         "funder_type": "federal",
         "amount_min": None,
         "amount_max": None,
-        "amount_notes": "Amount not published on program page",
+        "amount_notes": "Published amount table lists $50K floor and $250K ceiling",
         "amount_verified": False,
         "intake_type": "biannual",
-        "intake_open_date": None,
-        "intake_close_date": None,
+        "intake_open_date": "2026-10-01",
+        "intake_close_date": "2026-12-15",
         "decision_weeks_min": None,
         "decision_weeks_max": None,
         "provinces_eligible": ["ALL"],
