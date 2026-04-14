@@ -29,9 +29,50 @@ SPORTS_TEAM_EXCLUSION_PENALTY = -30           # "sports team" excluded + client 
 CAPITAL_ONLY_VS_PRE_LAUNCH_PENALTY = -25      # capital-only grant + pre-launch operating need
 MIN_OPERATING_YEARS_PENALTY = -20             # minimum-operating-years clause + pre-launch
 GEOGRAPHIC_RISK_PENALTY = -10                 # operator notes stamped "GEOGRAPHIC RISK"
+NONPROFIT_INELIGIBLE_PENALTY = -80            # NFP client + grant excludes non-profits
+FOR_PROFIT_INELIGIBLE_PENALTY = -80           # for-profit client + grant restricts to NFP
 AMOUNT_UNCONFIRMED_PENALTY = -3
 DEADLINE_UNKNOWN_PENALTY = -3
 URL_COLLISION_PENALTY = -2
+
+
+# ----- NFP / for-profit mismatch lexicons -----
+
+# Phrases (case-insensitive substring match) in grant exclusions that mean
+# "non-profits are not eligible; you must be a for-profit entity".
+_FOR_PROFIT_EXCLUSION_PHRASES: tuple[str, ...] = (
+    "non-profit organizations not eligible",
+    "for-profit only",
+    "profit-oriented",
+    "incorporated for-profit",
+)
+
+# Keywords in client legal_structure that identify an NFP or charity client.
+_NFP_CLIENT_LEGAL_KEYWORDS: tuple[str, ...] = (
+    "nfp",
+    "nonprofit",
+    "non-profit",
+    "charity",
+)
+
+# Keywords in grant eligibility text that mention NFP/charity eligibility.
+_NFP_ELIGIBILITY_KEYWORDS: tuple[str, ...] = (
+    "non-profit",
+    "nonprofit",
+    "nfp",
+    "charity",
+)
+
+# Keywords in grant eligibility text that mention for-profit eligibility.
+# If any of these appear, the grant is NOT NFP-only, so for_profit_ineligible
+# should not fire.
+_FOR_PROFIT_ELIGIBILITY_KEYWORDS: tuple[str, ...] = (
+    "for-profit",
+    "for profit",
+    "profit-oriented",
+    "sme",
+    "small or medium",
+)
 
 
 def _normalize_sectors(sectors: Any) -> set[str]:
@@ -99,6 +140,43 @@ def _joined_lower(grant: dict[str, Any], field: str) -> str:
     if not isinstance(items, list):
         return ""
     return " ".join(str(x) for x in items).lower()
+
+
+def _client_is_nfp(client: dict[str, Any]) -> bool:
+    """Return True if the client profile indicates an NFP or charity."""
+    legal = (client.get("legal_structure") or "").lower()
+    if any(kw in legal for kw in _NFP_CLIENT_LEGAL_KEYWORDS):
+        return True
+    if client.get("nfp_registered") is True:
+        return True
+    if client.get("registered_charity") is True:
+        return True
+    return False
+
+
+def _client_is_for_profit(client: dict[str, Any]) -> bool:
+    """Return True if the client profile is explicitly flagged for-profit."""
+    return client.get("for_profit") is True
+
+
+def _grant_excludes_nonprofit(grant: dict[str, Any]) -> bool:
+    """True if the grant's exclusions text contains a for-profit-only phrase."""
+    exclusions_text = _joined_lower(grant, "exclusions")
+    return any(
+        phrase in exclusions_text for phrase in _FOR_PROFIT_EXCLUSION_PHRASES
+    )
+
+
+def _grant_restricts_to_nonprofit(grant: dict[str, Any]) -> bool:
+    """True iff the grant's eligibility mentions NFP/charity AND has no
+    for-profit language. Mirrors the 'contain ONLY non-profit/NFP/charity
+    references with no for-profit language' spec."""
+    eligibility_text = _joined_lower(grant, "eligibility_criteria")
+    has_nfp = any(kw in eligibility_text for kw in _NFP_ELIGIBILITY_KEYWORDS)
+    has_for_profit = any(
+        kw in eligibility_text for kw in _FOR_PROFIT_ELIGIBILITY_KEYWORDS
+    )
+    return has_nfp and not has_for_profit
 
 
 def score_grant(
@@ -191,6 +269,28 @@ def score_grant(
             }
         )
 
+    # NFP client hitting a grant whose exclusions require for-profit status.
+    if _client_is_nfp(client) and _grant_excludes_nonprofit(grant):
+        score += NONPROFIT_INELIGIBLE_PENALTY
+        penalties.append(
+            {
+                "label": "non_profit_ineligible",
+                "points": NONPROFIT_INELIGIBLE_PENALTY,
+                "reason": "grant explicitly requires for-profit status",
+            }
+        )
+
+    # For-profit client hitting a grant whose eligibility is NFP/charity only.
+    if _client_is_for_profit(client) and _grant_restricts_to_nonprofit(grant):
+        score += FOR_PROFIT_INELIGIBLE_PENALTY
+        penalties.append(
+            {
+                "label": "for_profit_ineligible",
+                "points": FOR_PROFIT_INELIGIBLE_PENALTY,
+                "reason": "grant requires NFP or charity status",
+            }
+        )
+
     if client.get("stage") == "pre_launch":
         if (
             "operating cost" in exclusions_lc
@@ -246,3 +346,115 @@ def score_grant(
 
     result_shell["score"] = score
     return result_shell
+
+
+# ---------------------------------------------------------------------------
+# Inline tests for the NFP / for-profit mismatch rules
+# ---------------------------------------------------------------------------
+
+def _run_tests() -> None:
+    import json
+
+    nfp_client = {
+        "province": "SK",
+        "sectors": ["technology"],
+        "legal_structure": "NFP corporation",
+        "nfp_registered": True,
+        "stage": "operating",
+    }
+
+    for_profit_client = {
+        "province": "SK",
+        "sectors": ["technology"],
+        "for_profit": True,
+        "stage": "operating",
+    }
+
+    for_profit_only_grant = {
+        "grant_id": "test_for_profit_only",
+        "program_name": "For-Profit Only Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["technology"],
+        "exclusions": [
+            "CRITICAL: Non-profit organizations not eligible for this program",
+        ],
+        "eligibility_criteria": [
+            "Must be incorporated for-profit Canadian company",
+            "Must have at least three months of operations",
+            "Must serve Canadian markets",
+        ],
+        "status": "active",
+        "amount_max": 50000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": None,
+        "validation_warnings": [],
+    }
+
+    nfp_only_grant = {
+        "grant_id": "test_nfp_only",
+        "program_name": "NFP Only Test Grant",
+        "provinces_eligible": ["SK"],
+        "sectors": ["technology"],
+        "exclusions": [
+            "Individual pursuits are not supported",
+        ],
+        "eligibility_criteria": [
+            "Must be a registered charity or non-profit organization",
+            "Must serve Canadian communities",
+            "Must have strong financial management",
+        ],
+        "status": "active",
+        "amount_max": 50000,
+        "amount_verified": True,
+        "intake_type": "rolling",
+        "stackable": None,
+        "validation_warnings": [],
+    }
+
+    results: list[tuple[str, bool]] = []
+
+    # Test 1: NFP client x for-profit-only grant => non_profit_ineligible fires.
+    r1 = score_grant(nfp_client, for_profit_only_grant)
+    t1_ok = any(p["label"] == "non_profit_ineligible" for p in r1["penalties"])
+    results.append(("Test 1", t1_ok))
+    print(f"[{'PASS' if t1_ok else 'FAIL'}] Test 1: NFP client x for-profit-only grant "
+          "fires non_profit_ineligible")
+    print(f"    penalties: {json.dumps(r1['penalties'])}")
+    print()
+
+    # Test 2: NFP client x NFP-only grant => non_profit_ineligible does NOT fire.
+    r2 = score_grant(nfp_client, nfp_only_grant)
+    t2_ok = not any(p["label"] == "non_profit_ineligible" for p in r2["penalties"])
+    results.append(("Test 2", t2_ok))
+    print(f"[{'PASS' if t2_ok else 'FAIL'}] Test 2: NFP client x NFP-only grant "
+          "does not fire non_profit_ineligible")
+    print(f"    penalties: {json.dumps(r2['penalties'])}")
+    print()
+
+    # Test 3: for-profit client x NFP-only grant => for_profit_ineligible fires.
+    r3 = score_grant(for_profit_client, nfp_only_grant)
+    t3_ok = any(p["label"] == "for_profit_ineligible" for p in r3["penalties"])
+    results.append(("Test 3", t3_ok))
+    print(f"[{'PASS' if t3_ok else 'FAIL'}] Test 3: for-profit client x NFP-only grant "
+          "fires for_profit_ineligible")
+    print(f"    penalties: {json.dumps(r3['penalties'])}")
+    print()
+
+    # Test 4: for-profit client x for-profit-only grant => for_profit_ineligible
+    # does NOT fire.
+    r4 = score_grant(for_profit_client, for_profit_only_grant)
+    t4_ok = not any(p["label"] == "for_profit_ineligible" for p in r4["penalties"])
+    results.append(("Test 4", t4_ok))
+    print(f"[{'PASS' if t4_ok else 'FAIL'}] Test 4: for-profit client x for-profit-only "
+          "grant does not fire for_profit_ineligible")
+    print(f"    penalties: {json.dumps(r4['penalties'])}")
+    print()
+
+    all_passed = all(ok for _, ok in results)
+    print("=" * 60)
+    print("ALL TESTS PASSED" if all_passed else "ONE OR MORE TESTS FAILED")
+
+
+if __name__ == "__main__":
+    _run_tests()
