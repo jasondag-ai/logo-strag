@@ -321,5 +321,63 @@
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification",
       "url 'https://unitedwaysaskatoon.ca/' looks like a homepage, not a program page; caller should set status = 'url_unverified'"
     ]
+  },
+  {
+    "program_name": "Canadian Heritage Building Communities Through Arts and Heritage",
+    "funder": "Department of Canadian Heritage",
+    "funder_type": "federal",
+    "grant_type": "program_grant",
+    "is_repayable": false,
+    "amount_min": null,
+    "amount_max": null,
+    "amount_notes": "Amount not confirmed. Program has community anniversary and local festivals and events components. Amounts vary by component.",
+    "amount_verified": false,
+    "intake_type": "annual",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "ALL"
+    ],
+    "sectors": [
+      "culture",
+      "heritage",
+      "Indigenous",
+      "reconciliation",
+      "arts",
+      "community_development",
+      "youth"
+    ],
+    "organization_types_eligible": [
+      "Non-profit organizations",
+      "Municipal or regional governments",
+      "Indigenous organizations and communities",
+      "Local arts and heritage organizations"
+    ],
+    "eligibility_criteria": [
+      "Must be a non-profit organization or Indigenous community organization",
+      "Project must celebrate local arts, culture, or heritage",
+      "Must demonstrate community benefit and engagement",
+      "Indigenous cultural programming and reconciliation activities are eligible"
+    ],
+    "exclusions": [
+      "For-profit organizations",
+      "Activities primarily religious in nature"
+    ],
+    "stackable": true,
+    "url": "https://www.canada.ca/en/canadian-heritage/services/funding/building-communities.html",
+    "contact_email": "pch.info-info.pch@canada.ca",
+    "contact_phone": "1-866-811-0055",
+    "status": "verify_required",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.canada.ca/en/canadian-heritage/services/funding.html",
+    "notes": "PARTIAL DATA: Program confirmed active within Canadian Heritage portfolio. Specific intake dates and amounts need verification from program page. Relevant for Emerge Academy cultural programming component — land-based learning, Traditional Knowledge Keeper programming, and TRC Call to Action 92 alignment could qualify. Status verify_required pending full program page review. Contact Canadian Heritage regional office for SK intake schedule.",
+    "grant_id": "canadian_heritage_building_communities_through_arts_and",
+    "founder_age_restriction": null,
+    "validation_warnings": [
+      "amount_unconfirmed - verify before using in client report",
+      "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
+    ]
   }
 ]

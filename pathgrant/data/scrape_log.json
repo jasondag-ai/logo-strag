@@ -184,5 +184,19 @@
     "timestamp": "2026-04-14T21:49:32Z",
     "success": true,
     "grant_id": "united_way_canada_strong_kids_initiative_saskatchewan"
+  },
+  {
+    "source_url": "https://sasklotteries.ca/trust-funds-grants/",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T22:06:35Z",
+    "success": true,
+    "grant_id": "saskatchewan_lotteries_community_grant_program"
+  },
+  {
+    "source_url": "https://www.canada.ca/en/canadian-heritage/services/funding.html",
+    "fetch_method": "fixture",
+    "timestamp": "2026-04-14T22:06:35Z",
+    "success": true,
+    "grant_id": "canadian_heritage_building_communities_through_arts_and"
   }
 ]

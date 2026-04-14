@@ -851,5 +851,64 @@
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
     ]
+  },
+  {
+    "program_name": "Saskatchewan Lotteries Community Grant Program",
+    "funder": "Saskatchewan Lotteries Trust Fund — administered by Sask Sport / SaskCulture / SPRA",
+    "funder_type": "provincial",
+    "grant_type": "program_grant",
+    "is_repayable": false,
+    "amount_min": 250,
+    "amount_max": null,
+    "amount_notes": "Minimum $250 for southern communities, $500 for northern communities. Maximum not publicly stated — determined by community population formula. Grants over $2,000 require portion allocated to under-represented populations including Indigenous people.",
+    "amount_verified": true,
+    "intake_type": "annual",
+    "intake_open_date": null,
+    "intake_close_date": "2026-04-15",
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "SK"
+    ],
+    "sectors": [
+      "sport",
+      "culture",
+      "recreation",
+      "youth",
+      "Indigenous",
+      "community_development",
+      "inclusion"
+    ],
+    "organization_types_eligible": [
+      "Non-profit community organizations operated by volunteers in Saskatchewan",
+      "Organizations eligible via designation by Minister of Parks Culture and Sport",
+      "First Nation communities and northern settlements may apply directly",
+      "Municipal governments administer grants to local non-profit groups"
+    ],
+    "eligibility_criteria": [
+      "Must be a non-profit volunteer-led community organization in Saskatchewan",
+      "Must be designated eligible by Minister of Parks Culture and Sport OR apply through municipality or First Nation",
+      "Projects must develop sport, culture, or recreation programs for Saskatchewan residents",
+      "Grants over $2,000 must allocate portion to under-represented populations including Indigenous people",
+      "Projects must serve local community needs"
+    ],
+    "exclusions": [
+      "For-profit organizations not eligible",
+      "Organizations not designated or applying through eligible municipality or First Nation",
+      "Projects not related to sport, culture, or recreation"
+    ],
+    "stackable": true,
+    "url": "https://sasklotteries.ca/trust-funds-grants/",
+    "contact_email": "gmathiason@sasksport.ca",
+    "contact_phone": "306-220-6699",
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://sasklotteries.ca/trust-funds-grants/",
+    "time_sensitive": true,
+    "time_sensitive_note": "Community-specific deadlines vary. Some communities deadline April 15 2026 — verify Langenburg SK intake immediately. Projects April 1 2026 to March 31 2027. Contact Town of Langenburg or nearest First Nation to confirm local intake status. Indigenous people are a priority population — strong fit for Emerge Academy.",
+    "notes": "ACCESS PATH FOR EMERGE ACADEMY: Apply through Town of Langenburg or a Treaty 4 First Nation community as the municipal/First Nation intake point. Emerge Academy as an NFP would receive funding through the community intake rather than directly. Alternatively apply through Sask Sport as a member organization once incorporated. Over 1,200 organizations receive direct funding through this system — it is the primary sport funding mechanism in Saskatchewan. Indigenous people explicitly listed as priority population.",
+    "grant_id": "saskatchewan_lotteries_community_grant_program",
+    "founder_age_restriction": null,
+    "validation_warnings": []
   }
 ]
