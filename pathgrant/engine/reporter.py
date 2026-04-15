@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -118,8 +119,19 @@ def _format_grant_block(
     grant_lookup: dict[str, Any],
     *,
     signal_limit: int = 3,
+    intelligence: dict[str, Any] | None = None,
 ) -> str:
-    """Tight grant block for the ranked sections."""
+    """Tight grant block for the ranked sections.
+
+    When `intelligence` is provided and the current grant is one of the
+    covered top-N grants in intelligence.metadata.top_grants_covered, the
+    block appends (a) the per-grant structured narrative and (b) the DIY
+    starter kit after the program-page line. When `intelligence` is
+    provided but the grant is outside top_grants_covered, a single
+    italicized line marks that intelligence is only available for the
+    top N. When `intelligence` is None, the block is byte-identical to
+    the pre-integration output.
+    """
     gid = result["grant_id"]
     name = result["program_name"]
     score = result["score"]
@@ -196,7 +208,175 @@ def _format_grant_block(
     else:
         lines.append(f"`{gid}`")
 
+    # Intelligence narrative + DIY starter kit (gated by top_grants_covered)
+    if intelligence is not None:
+        covered = (
+            (intelligence.get("metadata") or {}).get("top_grants_covered") or []
+        )
+        if gid in covered:
+            per_grant_intel = (
+                (intelligence.get("per_grant") or {}).get(gid) or {}
+            )
+            structured = per_grant_intel.get("structured")
+            diy_kit = per_grant_intel.get("diy_starter_kit")
+            if structured:
+                lines.append("")
+                lines.extend(_format_intelligence_narrative(structured))
+            if diy_kit:
+                lines.append("")
+                lines.extend(_format_diy_starter_kit(diy_kit))
+        else:
+            lines.append("")
+            lines.append(
+                "_Intelligence analysis available for top "
+                f"{len(covered)} grants only._"
+            )
+
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Intelligence helpers -- only used when build_report is called with an
+# intelligence dict (produced by engine.intelligence.generate_intelligence).
+# When intelligence is None, all of these are bypassed and the reporter
+# output is byte-identical to the pre-integration behavior.
+# ---------------------------------------------------------------------------
+
+_SENTINEL_PREFIX = "<generation failed"
+
+
+def _is_sentinel_string(s: Any) -> bool:
+    """True if a value is a generation-failure sentinel left by intelligence.py.
+
+    Intelligence calls that fail after all retries leave sentinels in place
+    of real content so the downstream report still renders. Reporter uses
+    this check to substitute an italicized warning instead of the raw
+    sentinel text.
+    """
+    return isinstance(s, str) and s.startswith(_SENTINEL_PREFIX)
+
+
+def _shift_diy_headers(md: str) -> str:
+    """Rewrite ### sub-headers in a DIY starter kit to #### so the block
+    nests cleanly under a grant's ### Tier N header.
+
+    The intelligence module writes the 4 locked sub-headers at ### level
+    on the assumption that reporter owns the ## wrapper. When reporter
+    embeds the DIY kit inside a ### grant block, the kit's ### headers
+    would collide in the hierarchy -- this shifts them one level deeper.
+    """
+    return re.sub(r"^### ", "#### ", md or "", flags=re.MULTILINE)
+
+
+def _format_intelligence_narrative(structured: dict[str, Any]) -> list[str]:
+    """Format the per-grant structured intelligence block as markdown lines.
+
+    Returns a list of lines ready to extend() into a grant block. Sentinel
+    content is substituted with a single italicized warning line; partial
+    content is rendered where present.
+    """
+    if not structured:
+        return []
+
+    why = structured.get("why_client_qualifies") or ""
+    if _is_sentinel_string(why):
+        return [
+            "---",
+            "",
+            "**Intelligence analysis:** "
+            "_generation failed for this grant. Re-run "
+            "`intelligence.py --client <client_id>` to retry._",
+        ]
+
+    lines: list[str] = ["---", ""]
+
+    lines.append("**Why this fits:**")
+    lines.append("")
+    lines.append(why.strip())
+    lines.append("")
+
+    positioning = (structured.get("positioning_angle") or "").strip()
+    if positioning:
+        lines.append("**Positioning angle:**")
+        lines.append("")
+        lines.append(positioning)
+        lines.append("")
+
+    what_not = structured.get("what_not_to_emphasize") or []
+    if what_not:
+        lines.append("**What NOT to emphasize:**")
+        for item in what_not:
+            lines.append(f"- {item}")
+        lines.append("")
+
+    docs = structured.get("required_documents") or []
+    if docs:
+        lines.append("**Required documents:**")
+        for d in docs:
+            lines.append(f"- {d}")
+        lines.append("")
+
+    risks = (structured.get("eligibility_risks") or "").strip()
+    if risks:
+        lines.append("**Eligibility risks:**")
+        lines.append("")
+        lines.append(risks)
+        lines.append("")
+
+    strategy = structured.get("application_strategy") or {}
+    if strategy:
+        lines.append("**Application strategy:**")
+        lines.append("")
+
+        narrative = (strategy.get("narrative_framework") or "").strip()
+        if narrative:
+            lines.append(f"_Narrative framework:_ {narrative}")
+            lines.append("")
+
+        sequencing = (strategy.get("sequencing_and_dependencies") or "").strip()
+        if sequencing:
+            lines.append(f"_Sequencing & dependencies:_ {sequencing}")
+            lines.append("")
+
+        rejection_reasons = strategy.get("common_rejection_reasons") or []
+        if rejection_reasons:
+            lines.append("_Common rejection reasons:_")
+            for r in rejection_reasons:
+                lines.append(f"- {r}")
+            lines.append("")
+
+        action_list = strategy.get("client_specific_action_list") or []
+        if action_list:
+            lines.append("_Client action list:_")
+            for a in action_list:
+                lines.append(f"- {a}")
+            lines.append("")
+
+    notes = (structured.get("notes") or "").strip()
+    if notes:
+        lines.append(f"_Notes:_ {notes}")
+        lines.append("")
+
+    return lines
+
+
+def _format_diy_starter_kit(diy_md: str) -> list[str]:
+    """Format the DIY starter kit as markdown lines. Shifts ### -> ####."""
+    if not diy_md:
+        return []
+
+    if _is_sentinel_string(diy_md):
+        return [
+            "---",
+            "",
+            "**DIY starter kit:** _generation failed. "
+            "Re-run `intelligence.py` to retry this section._",
+        ]
+
+    lines: list[str] = ["---", "", "**DIY starter kit:**", ""]
+    lines.append(_shift_diy_headers(diy_md.strip()))
+    lines.append("")
+    return lines
 
 
 # ---------------------------------------------------------------------------
@@ -271,6 +451,7 @@ def _section_ranked_bucket(
     *,
     header: str,
     limit: int | None,
+    intelligence: dict[str, Any] | None = None,
 ) -> str:
     tiered = _filter_tiered(bucket)
     if limit is not None:
@@ -280,7 +461,9 @@ def _section_ranked_bucket(
     parts = [f"## {header}", ""]
     for r in tiered:
         cite(r["grant_id"])
-        parts.append(_format_grant_block(r, grant_lookup))
+        parts.append(
+            _format_grant_block(r, grant_lookup, intelligence=intelligence)
+        )
         parts.append("")
     return "\n".join(parts)
 
@@ -406,6 +589,179 @@ def _section_sources(
 
 
 # ---------------------------------------------------------------------------
+# Intelligence-driven sections: SR&ED, 90-day plan, Stragentic CTA.
+# Only rendered when build_report is called with intelligence=<dict>.
+# ---------------------------------------------------------------------------
+
+def _section_sred_assessment(intel_sred: dict[str, Any] | None) -> str:
+    """Render SR&ED assessment from intelligence.per_client.sred_assessment.
+
+    Always renders when intelligence is present, per operator spec: the
+    'correctly rejected and here's why' reasoning is client value, not
+    noise. Sentinel content collapses to an italicized warning.
+    """
+    if not intel_sred:
+        return ""
+
+    reasoning = intel_sred.get("reasoning") or ""
+    if _is_sentinel_string(reasoning):
+        return (
+            "## SR&ED Assessment\n\n"
+            "> _Intelligence generation failed for this section. "
+            "Re-run `intelligence.py --client <client_id>` to retry._\n"
+        )
+
+    likely = intel_sred.get("likely_eligible")
+    if likely is True:
+        label = "Yes"
+    elif likely is False:
+        label = "No"
+    elif likely == "partial":
+        label = "Partial"
+    else:
+        label = "Unknown"
+
+    lines = ["## SR&ED Assessment", ""]
+    lines.append(f"**Likely eligible:** {label}")
+    lines.append("")
+    lines.append(reasoning.strip())
+
+    activities = intel_sred.get("eligible_activities") or []
+    if activities:
+        lines.append("")
+        lines.append("**Eligible activities:**")
+        for a in activities:
+            lines.append(f"- {a}")
+
+    blockers = intel_sred.get("blocking_factors") or []
+    if blockers:
+        lines.append("")
+        lines.append("**Blocking factors:**")
+        for b in blockers:
+            lines.append(f"- {b}")
+
+    interaction = (intel_sred.get("interaction_with_other_grants") or "").strip()
+    if interaction:
+        lines.append("")
+        lines.append(f"**Interaction with other grants:** {interaction}")
+
+    recommended = (intel_sred.get("recommended_action") or "").strip()
+    if recommended:
+        lines.append("")
+        lines.append(f"**Recommended action:** {recommended}")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _section_90_day_plan(plan_md: str | None) -> str:
+    """Wrap the freeform 90-day plan markdown with the ## header.
+
+    The intelligence module writes the 5 locked sub-headers (### Weeks 1-4
+    through ### Responsible parties) at ### level; reporter owns the ##
+    wrapper. Sentinel content collapses to an italicized warning.
+    """
+    if not plan_md:
+        return ""
+    if _is_sentinel_string(plan_md):
+        return (
+            "## 90-Day Action Plan\n\n"
+            f"> _{plan_md}_\n"
+        )
+    return "## 90-Day Action Plan\n\n" + plan_md.strip() + "\n"
+
+
+# Static hardcoded engagement options -- prices and descriptions are
+# Stragentic business terms, NOT LLM-generated. Only the per-client
+# narrative (summary_of_delivered, rationale, roi_math, recommended
+# option letter) comes from intelligence.per_client.stragentic_cta.
+_STRAGENTIC_OPTIONS = {
+    "A": {
+        "label": "Option A — DIY + Review",
+        "price": "$1,500 / grant",
+        "description": (
+            "Stragentic reviews your self-drafted application before "
+            "submission. Structural feedback, eligibility check, final "
+            "polish. You own the writing; we catch the mistakes."
+        ),
+    },
+    "B": {
+        "label": "Option B — Stragentic Drafts",
+        "price": "$3,500 – $5,000 / grant",
+        "description": (
+            "Stragentic drafts the complete application based on your "
+            "program documentation. You approve, sign, submit. "
+            "Typical two-week turnaround per grant."
+        ),
+    },
+    "C": {
+        "label": "Option C — Full Service",
+        "price": "$7,500 + 3% of awarded",
+        "description": (
+            "Stragentic owns the entire application lifecycle: narrative, "
+            "budget, supporting documents, funder communications, "
+            "revisions. Fixed fee plus success-based percentage. For "
+            "high-stakes applications where execution risk must be "
+            "eliminated."
+        ),
+    },
+}
+
+
+def _section_stragentic_cta(intel_cta: dict[str, Any] | None) -> str:
+    """Render the Stragentic engagement CTA. Prices are hardcoded; the
+    per-client narrative fields come from intelligence.
+
+    The recommended option is rendered first with a ⭐ marker; the other
+    two appear after. Contact line always appears at the end.
+    """
+    if not intel_cta:
+        return ""
+
+    summary = (intel_cta.get("summary_of_delivered") or "").strip()
+    if _is_sentinel_string(summary):
+        return (
+            "## Engagement Options\n\n"
+            "> _Intelligence generation failed for this section. "
+            "Re-run `intelligence.py --client <client_id>` to retry._\n"
+        )
+
+    recommended = intel_cta.get("recommended_option") or "A"
+    if recommended not in _STRAGENTIC_OPTIONS:
+        recommended = "A"
+    rationale = (intel_cta.get("recommendation_rationale") or "").strip()
+    roi = (intel_cta.get("roi_math") or "").strip()
+
+    lines = ["## Engagement Options", ""]
+    if summary:
+        lines.append(summary)
+        lines.append("")
+
+    # Recommended option first (⭐), then the other two in A/B/C order.
+    ordered_letters = [recommended] + [
+        l for l in ("A", "B", "C") if l != recommended
+    ]
+    for letter in ordered_letters:
+        opt = _STRAGENTIC_OPTIONS[letter]
+        marker = "⭐ **Recommended**  ·  " if letter == recommended else ""
+        lines.append(f"### {marker}{opt['label']}  ·  {opt['price']}")
+        lines.append("")
+        lines.append(opt["description"])
+        lines.append("")
+
+    if rationale:
+        lines.append(f"**Why Option {recommended} for this client:** {rationale}")
+        lines.append("")
+    if roi:
+        lines.append(f"**ROI math:** {roi}")
+        lines.append("")
+
+    lines.append("**Contact:** jason@stragentic.com")
+    lines.append("")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Main report assembly
 # ---------------------------------------------------------------------------
 
@@ -415,8 +771,19 @@ def build_report(
     unverified: list[dict[str, Any]],
     *,
     generated_at: datetime | None = None,
+    intelligence: dict[str, Any] | None = None,
 ) -> tuple[str, list[str]]:
-    """Return (markdown_body, cited_grant_ids_in_order)."""
+    """Return (markdown_body, cited_grant_ids_in_order).
+
+    When `intelligence` is None, the report is structural-only and
+    byte-identical to the pre-integration behavior. When intelligence
+    is provided, three new top-level sections are inserted
+    (SR&ED Assessment, 90-Day Action Plan, Stragentic CTA) and per-grant
+    blocks for grants in intelligence.metadata.top_grants_covered get
+    the narrative analysis + DIY starter kit appended; grants outside
+    top_grants_covered get a one-line italicized availability note.
+    Sources always sits last.
+    """
     generated_at = generated_at or datetime.now(timezone.utc)
 
     scored = match(client, verified)
@@ -509,6 +876,7 @@ def build_report(
     top_md = _section_ranked_bucket(
         program_grants, grant_lookup, cite,
         header="Top Matches — Program Grants", limit=5,
+        intelligence=intelligence,
     )
     if top_md:
         sections.append(top_md)
@@ -516,6 +884,7 @@ def build_report(
     spon_md = _section_ranked_bucket(
         sponsorships, grant_lookup, cite,
         header="Sponsorships", limit=3,
+        intelligence=intelligence,
     )
     if spon_md:
         sections.append(spon_md)
@@ -523,6 +892,7 @@ def build_report(
     res_md = _section_ranked_bucket(
         research_grants, grant_lookup, cite,
         header="Research Grants", limit=3,
+        intelligence=intelligence,
     )
     if res_md:
         sections.append(res_md)
@@ -530,6 +900,7 @@ def build_report(
     tax_md = _section_ranked_bucket(
         tax_credits, grant_lookup, cite,
         header="Tax Credits", limit=None,
+        intelligence=intelligence,
     )
     if tax_md:
         sections.append(tax_md)
@@ -537,9 +908,19 @@ def build_report(
     fin_md = _section_ranked_bucket(
         financing, grant_lookup, cite,
         header="Financing (repayable)", limit=None,
+        intelligence=intelligence,
     )
     if fin_md:
         sections.append(fin_md)
+
+    # SR&ED Assessment -- inserted after Financing, before Eligibility
+    # Risks, per operator spec. Only rendered when intelligence is present.
+    if intelligence is not None:
+        sred_md = _section_sred_assessment(
+            (intelligence.get("per_client") or {}).get("sred_assessment")
+        )
+        if sred_md:
+            sections.append(sred_md)
 
     risk_md = _section_eligibility_risks(scored, grant_lookup, cite)
     if risk_md:
@@ -553,7 +934,25 @@ def build_report(
     if adv_md:
         sections.append(adv_md)
 
-    # Sources always last.
+    # 90-Day Action Plan and Stragentic CTA -- closing argument sections
+    # that synthesize across the top grants, placed near the end of the
+    # report. Only rendered when intelligence is present.
+    if intelligence is not None:
+        plan_md = _section_90_day_plan(
+            (intelligence.get("per_client") or {}).get("90_day_action_plan")
+        )
+        if plan_md:
+            sections.append(plan_md)
+
+        cta_md = _section_stragentic_cta(
+            (intelligence.get("per_client") or {}).get("stragentic_cta")
+        )
+        if cta_md:
+            sections.append(cta_md)
+
+    # Sources always last. Reference appendix -- sits after CTA so the
+    # CTA acts as the closing argument and Sources acts as the citation
+    # trail readers can scan to verify every grant claim in the report.
     full_lookup = {**grant_lookup, **unverified_lookup}
     sections.append(_section_sources(cited_ids, full_lookup))
 
@@ -580,15 +979,36 @@ def _cli() -> None:
         action="store_true",
         help="Print markdown to stdout only; do not write any files",
     )
+    parser.add_argument(
+        "--intelligence-path",
+        type=Path,
+        default=None,
+        help=(
+            "Path to intelligence.json produced by intelligence.py. When "
+            "omitted, reporter falls back to structural-only output."
+        ),
+    )
     args = parser.parse_args()
 
     client = load_client_profile(args.client)
     verified = load_grants(args.verified_path)
     unverified = load_grants(args.unverified_path)
 
+    intelligence = None
+    if args.intelligence_path is not None:
+        if not args.intelligence_path.exists():
+            raise SystemExit(
+                f"--intelligence-path not found: {args.intelligence_path}"
+            )
+        intelligence = json.loads(
+            args.intelligence_path.read_text(encoding="utf-8")
+        )
+
     generated_at = datetime.now(timezone.utc)
     body, cited = build_report(
-        client, verified, unverified, generated_at=generated_at
+        client, verified, unverified,
+        generated_at=generated_at,
+        intelligence=intelligence,
     )
 
     if args.stdout:
