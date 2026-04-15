@@ -490,51 +490,141 @@ def _compute_fresh_deadline_note(close_date: str, today: str) -> str | None:
     )
 
 
+STALE_VERIFICATION_DAYS = 60
+
+
+def _check_stale_records(
+    scored: list[dict[str, Any]],
+    grant_lookup: dict[str, Any],
+    generated_at: datetime,
+) -> list[dict[str, Any]]:
+    """Return records whose last_verified is older than STALE_VERIFICATION_DAYS.
+
+    Walks the same record set as the Complete Grant Register: grants that
+    are not eliminated and not scoring_note. For each, computes the age
+    in days between last_verified and generated_at, and flags any whose
+    age exceeds the threshold.
+
+    Returns a list of dicts with keys {program_name, grant_id,
+    last_verified, days_since_verified}, sorted by days_since_verified
+    descending (most stale first). Records with missing or unparseable
+    last_verified fields are skipped silently.
+    """
+    today_d = generated_at.date() if isinstance(generated_at, datetime) else generated_at
+    stale: list[dict[str, Any]] = []
+    for r in scored:
+        if r.get("eliminator") is not None:
+            continue
+        if r.get("record_type") not in (None, "grant"):
+            continue
+        grant = grant_lookup.get(r["grant_id"], {})
+        last_str = grant.get("last_verified")
+        if not last_str:
+            continue
+        try:
+            last_d = datetime.strptime(last_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        days = (today_d - last_d).days
+        if days > STALE_VERIFICATION_DAYS:
+            stale.append(
+                {
+                    "program_name": (
+                        r.get("program_name") or grant.get("program_name", "")
+                    ),
+                    "grant_id": r["grant_id"],
+                    "last_verified": last_str,
+                    "days_since_verified": days,
+                }
+            )
+    stale.sort(key=lambda x: -x["days_since_verified"])
+    return stale
+
+
 def _section_alerts(
     time_sensitive: list[dict[str, Any]],
     grant_lookup: dict[str, Any],
     cite,
     today: str,
+    scored: list[dict[str, Any]] | None = None,
+    generated_at: datetime | None = None,
 ) -> str:
     """Render the Alerts section. Deadline calculations use the supplied
     today value, not whatever stale math is hardcoded into the grant's
     time_sensitive_note field.
+
+    When `scored` and `generated_at` are provided, appends a data
+    freshness warning listing records whose last_verified is older than
+    STALE_VERIFICATION_DAYS. The section renders if there are any
+    time-sensitive deadlines OR any stale records; it returns empty
+    string only when both lists are empty.
     """
-    if not time_sensitive:
+    stale: list[dict[str, Any]] = []
+    if scored is not None and generated_at is not None:
+        stale = _check_stale_records(scored, grant_lookup, generated_at)
+
+    if not time_sensitive and not stale:
         return ""
-    time_sensitive = sorted(time_sensitive, key=lambda r: -r["score"])
+
     parts = ["## ⏰ Alerts: time-sensitive deadlines", ""]
-    for r in time_sensitive:
-        cite(r["grant_id"])
-        grant = grant_lookup.get(r["grant_id"], {})
-        close = grant.get("intake_close_date") or "deadline TBD"
 
-        # Always compute deadline math fresh from today's date.
-        fresh = (
-            _compute_fresh_deadline_note(close, today)
-            if close != "deadline TBD"
-            else None
+    if time_sensitive:
+        time_sensitive = sorted(time_sensitive, key=lambda r: -r["score"])
+        for r in time_sensitive:
+            cite(r["grant_id"])
+            grant = grant_lookup.get(r["grant_id"], {})
+            close = grant.get("intake_close_date") or "deadline TBD"
+
+            # Always compute deadline math fresh from today's date.
+            fresh = (
+                _compute_fresh_deadline_note(close, today)
+                if close != "deadline TBD"
+                else None
+            )
+
+            # Grant's stored note may contain either:
+            #   (a) stale date math (starts with "Deadline <ISO> is ...") -- drop it
+            #   (b) genuine context (e.g., "Community-specific deadlines vary...") -- keep it
+            raw_note = (grant.get("time_sensitive_note") or "").strip()
+            if raw_note and _STALE_DEADLINE_NOTE_RE.match(raw_note):
+                raw_note = ""
+
+            if fresh and raw_note:
+                note = f"{fresh}. {raw_note}"
+            elif fresh:
+                note = fresh
+            elif raw_note:
+                note = raw_note
+            else:
+                note = "In deadline window."
+
+            parts.append(
+                f"- **{r['program_name']}**, close {close}, score {r['score']}"
+            )
+            parts.append(f"  _{note}_")
+        parts.append("")
+
+    if stale:
+        parts.append("---")
+        parts.append("")
+        parts.append("**⚠ Data freshness warning**")
+        parts.append("")
+        parts.append(
+            "The following grant records have not been verified against "
+            "official sources within the last 60 days. Deadlines, amounts, "
+            "and eligibility criteria may have changed. Confirm directly "
+            "with the funder before submitting any application."
         )
+        parts.append("")
+        parts.append("| Program | Last Verified | Days Since Verified |")
+        parts.append("|---|---|---|")
+        for rec in stale:
+            parts.append(
+                f"| {rec['program_name']} | {rec['last_verified']} | "
+                f"{rec['days_since_verified']} days |"
+            )
+        parts.append("")
 
-        # Grant's stored note may contain either:
-        #   (a) stale date math (starts with "Deadline <ISO> is ...") -- drop it
-        #   (b) genuine context (e.g., "Community-specific deadlines vary...") -- keep it
-        raw_note = (grant.get("time_sensitive_note") or "").strip()
-        if raw_note and _STALE_DEADLINE_NOTE_RE.match(raw_note):
-            raw_note = ""
-
-        if fresh and raw_note:
-            note = f"{fresh}. {raw_note}"
-        elif fresh:
-            note = fresh
-        elif raw_note:
-            note = raw_note
-        else:
-            note = "In deadline window."
-
-        parts.append(f"- **{r['program_name']}**, close {close}, score {r['score']}")
-        parts.append(f"  _{note}_")
-    parts.append("")
     return "\n".join(parts)
 
 
@@ -1298,7 +1388,12 @@ def build_report(
 
     today_str = generated_at.strftime("%Y-%m-%d")
     alerts_md = _section_alerts(
-        time_sensitive_alerts, grant_lookup, cite, today_str
+        time_sensitive_alerts,
+        grant_lookup,
+        cite,
+        today_str,
+        scored=scored,
+        generated_at=generated_at,
     )
     if alerts_md:
         sections.append(alerts_md)
@@ -1545,6 +1640,95 @@ def _run_tests() -> int:
         "_section_grant_register renders header and at least one row",
         "## Complete Grant Register" in register
         and "| Test Grant | Test Funder |" in register,
+    )
+
+    # _check_stale_records: all fresh, all stale, threshold edge.
+    _today = datetime(2026, 4, 15, tzinfo=timezone.utc)
+
+    _fresh_scored = [
+        {
+            "grant_id": "fresh_g",
+            "program_name": "Fresh Grant",
+            "eliminator": None,
+            "record_type": "grant",
+        },
+    ]
+    _fresh_lookup = {
+        "fresh_g": {
+            "program_name": "Fresh Grant",
+            "last_verified": "2026-04-14",  # 1 day old
+        },
+    }
+    _check(
+        "_check_stale_records returns empty list when all records fresh",
+        _check_stale_records(_fresh_scored, _fresh_lookup, _today) == [],
+    )
+
+    _stale_scored = [
+        {
+            "grant_id": "stale_g",
+            "program_name": "Stale Grant",
+            "eliminator": None,
+            "record_type": "grant",
+        },
+        {
+            "grant_id": "very_stale_g",
+            "program_name": "Very Stale Grant",
+            "eliminator": None,
+            "record_type": "grant",
+        },
+        {
+            "grant_id": "eliminated_g",
+            "program_name": "Eliminated Grant",
+            "eliminator": "province_not_eligible",
+            "record_type": "grant",
+        },
+    ]
+    _stale_lookup = {
+        "stale_g": {
+            "program_name": "Stale Grant",
+            "last_verified": "2026-01-15",  # 90 days old
+        },
+        "very_stale_g": {
+            "program_name": "Very Stale Grant",
+            "last_verified": "2025-12-01",  # 135 days old
+        },
+        "eliminated_g": {
+            "program_name": "Eliminated Grant",
+            "last_verified": "2025-06-01",  # very stale but eliminated
+        },
+    }
+    _stale_result = _check_stale_records(_stale_scored, _stale_lookup, _today)
+    _check(
+        "_check_stale_records flags records older than 60 days",
+        len(_stale_result) == 2
+        and _stale_result[0]["grant_id"] == "very_stale_g"
+        and _stale_result[1]["grant_id"] == "stale_g"
+        and all(r["days_since_verified"] > 60 for r in _stale_result)
+        and all(r["grant_id"] != "eliminated_g" for r in _stale_result),
+    )
+
+    # _section_alerts includes stale warning when stale records exist.
+    _cited2: list[str] = []
+
+    def _cite2(gid: str) -> None:
+        if gid not in _cited2:
+            _cited2.append(gid)
+
+    _alerts_with_stale = _section_alerts(
+        time_sensitive=[],
+        grant_lookup=_stale_lookup,
+        cite=_cite2,
+        today="2026-04-15",
+        scored=_stale_scored,
+        generated_at=_today,
+    )
+    _check(
+        "_section_alerts includes stale warning when stale records exist",
+        "**⚠ Data freshness warning**" in _alerts_with_stale
+        and "| Very Stale Grant | 2025-12-01 | 135 days |" in _alerts_with_stale
+        and "| Stale Grant | 2026-01-15 | 90 days |" in _alerts_with_stale
+        and "Eliminated Grant" not in _alerts_with_stale,
     )
 
     print("=" * 60)
