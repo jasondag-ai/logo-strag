@@ -612,16 +612,72 @@ def strip_code_fences(text: str) -> str:
     return stripped
 
 
+# ---------------------------------------------------------------------------
+# Em dash stripper -- ban enforcement for Directive v2.0 style rule 9
+#
+# Model-level prompt rules alone do not fully suppress em dashes (they are
+# too deeply trained into Claude's prose output). This is a deterministic
+# post-processor applied to every LLM response before the parsed object is
+# handed to schema validation or the freeform body is written.
+# ---------------------------------------------------------------------------
+
+_EM_DASH = "\u2014"
+_EM_DASH_SPACED_RE = re.compile(rf" {_EM_DASH} ")
+_EM_DASH_EOL_RE = re.compile(rf"\s*{_EM_DASH}(?=\n|$)")
+
+
+def strip_em_dashes(text: str) -> str:
+    """Replace em dashes with context-appropriate punctuation.
+
+    Three cases, applied in order so each consumes its own shape:
+
+    1. " \u2014 " (space em dash space) -> ": "
+       Reads better than a comma for the mid-sentence em dash, which is
+       the most common shape in LLM prose.
+    2. "\u2014" at end of line or end of string -> "."
+       An em dash with no trailing content is a sentence terminator.
+    3. "\u2014" (bare, no spaces) -> "-"
+       Compound-word hyphenation rendered with the wrong character.
+    """
+    # Case 1: space em dash space -> colon space
+    text = _EM_DASH_SPACED_RE.sub(": ", text)
+    # Case 2: em dash at EOL / EOS -> period (consume any preceding space)
+    text = _EM_DASH_EOL_RE.sub(".", text)
+    # Case 3: any remaining bare em dash -> hyphen
+    text = text.replace(_EM_DASH, "-")
+    return text
+
+
+def _strip_em_dashes_recursive(obj: Any) -> Any:
+    """Walk a parsed JSON object and apply strip_em_dashes to every string.
+
+    Returns a new object; does not mutate the input.
+    """
+    if isinstance(obj, str):
+        return strip_em_dashes(obj)
+    if isinstance(obj, dict):
+        return {k: _strip_em_dashes_recursive(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_strip_em_dashes_recursive(x) for x in obj]
+    return obj
+
+
 def parse_json_response(
     text: str, schema: dict
 ) -> tuple[dict | None, str | None]:
     """Return (parsed_obj, None) on success, (None, error_message) on
-    parse failure OR schema violation."""
+    parse failure OR schema violation.
+
+    Em dashes are stripped from every string in the parsed object BEFORE
+    schema validation, so that sentinel fallbacks never encounter cleaned
+    vs uncleaned content divergence.
+    """
     body = strip_code_fences(text)
     try:
         obj = json.loads(body)
     except json.JSONDecodeError as exc:
         return None, f"JSON parse error: {exc}"
+    obj = _strip_em_dashes_recursive(obj)
     errors = validate_schema(obj, schema)
     if errors:
         return None, "Schema validation errors: " + "; ".join(errors)
@@ -927,7 +983,7 @@ def generate_freeform_section(
         call_record["error"] = f"api_error: {err}"
         return freeform_sentinel(err), call_record
 
-    body = strip_code_fences(text)
+    body = strip_em_dashes(strip_code_fences(text))
     call_record["success"] = True
     return body, call_record
 
@@ -1471,6 +1527,41 @@ def _run_sanity_tests() -> int:
     _obj, _err = parse_json_response(_fenced, PER_GRANT_SCHEMA)
     _check("parse_json_response strips code fence + parses",
            _obj is not None and _err is None)
+
+    # --- Chunk 3: em dash strip (Directive v2.0 rule 9 enforcement) ---
+    _em_sample = (
+        "Foo bar \u2014 baz qux. "          # case 1: spaced mid-sentence
+        "Alpha\u2014beta. "                 # case 3: bare, compound
+        "End of sentence \u2014\n"          # case 2: em dash at EOL
+        "Another \u2014"                    # case 2: em dash at EOS
+    )
+    _stripped = strip_em_dashes(_em_sample)
+    _check("strip_em_dashes removes all em dashes",
+           "\u2014" not in _stripped)
+    _check("strip_em_dashes case 1: spaced -> colon space",
+           "Foo bar: baz qux." in _stripped)
+    _check("strip_em_dashes case 2: EOL -> period",
+           "End of sentence.\n" in _stripped)
+    _check("strip_em_dashes case 2: EOS -> period",
+           _stripped.rstrip().endswith("Another."))
+    _check("strip_em_dashes case 3: bare -> hyphen",
+           "Alpha-beta." in _stripped)
+
+    # parse_json_response must strip em dashes from parsed strings
+    # before schema validation runs.
+    _dirty_obj = dict(per_grant_sentinel("x"))
+    _dirty_obj["why_client_qualifies"] = "client is a NFP \u2014 applicant entity"
+    _dirty_obj["eligibility_risks"] = "risk\u2014critical"
+    _dirty_json = json.dumps(_dirty_obj)
+    _obj, _err = parse_json_response(_dirty_json, PER_GRANT_SCHEMA)
+    _check("parse_json_response strips em dashes from strings",
+           _obj is not None
+           and "\u2014" not in _obj["why_client_qualifies"]
+           and "\u2014" not in _obj["eligibility_risks"])
+    _check("parse_json_response applies case 1 to spaced mid-sentence",
+           _obj["why_client_qualifies"] == "client is a NFP: applicant entity")
+    _check("parse_json_response applies case 3 to bare em dash",
+           _obj["eligibility_risks"] == "risk-critical")
 
     # --- Chunk 3: backoff (mocked API fn) ---
     def _mock_ok(**kwargs):

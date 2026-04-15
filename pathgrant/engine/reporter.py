@@ -140,7 +140,7 @@ def _format_grant_block(
     url = grant.get("url") or ""
 
     # Header line -- tier tag + name
-    tier_tag = f"Tier {tier}" if tier else "—"
+    tier_tag = f"Tier {tier}" if tier else "-"
     header = f"### {tier_tag} · {name}"
 
     # Meta line -- score + flags
@@ -163,7 +163,7 @@ def _format_grant_block(
 
     lines = [header, meta, ""]
     if amount_notes:
-        lines.append(f"{amount} — {amount_notes}")
+        lines.append(f"{amount}: {amount_notes}")
     else:
         lines.append(amount)
     lines.append("")
@@ -184,7 +184,7 @@ def _format_grant_block(
             reason = p.get("reason")
             label = p["label"]
             if reason:
-                lines.append(f"- {p['points']:+d} {label} — {reason}")
+                lines.append(f"- {p['points']:+d} {label}: {reason}")
             else:
                 lines.append(f"- {p['points']:+d} {label}")
         lines.append("")
@@ -380,6 +380,46 @@ def _format_diy_starter_kit(diy_md: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Em dash stripper -- Directive v2.0 rule 9 enforcement applied to any
+# string rendered into the report. Source grant JSON may contain em dashes
+# in notes and other free-text fields; this ensures they never leak into
+# the generated output. Duplicates intelligence.py's strip_em_dashes to
+# keep reporter self-contained.
+# ---------------------------------------------------------------------------
+
+_EM_DASH = "\u2014"
+_EM_DASH_SPACED_RE = re.compile(rf" {_EM_DASH} ")
+_EM_DASH_EOL_RE = re.compile(rf"\s*{_EM_DASH}(?=\n|$)")
+
+
+def _strip_em_dashes(text: str) -> str:
+    """Replace em dashes with context-appropriate punctuation.
+
+    Case 1: " \u2014 " (spaced) -> ": "
+    Case 2: "\u2014" at end of line or string -> "."
+    Case 3: "\u2014" (bare) -> "-"
+    """
+    text = _EM_DASH_SPACED_RE.sub(": ", text)
+    text = _EM_DASH_EOL_RE.sub(".", text)
+    text = text.replace(_EM_DASH, "-")
+    return text
+
+
+def _strip_em_dashes_recursive(obj: Any) -> Any:
+    """Walk a parsed JSON object and apply _strip_em_dashes to every string.
+
+    Returns a new object; does not mutate the input.
+    """
+    if isinstance(obj, str):
+        return _strip_em_dashes(obj)
+    if isinstance(obj, dict):
+        return {k: _strip_em_dashes_recursive(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_strip_em_dashes_recursive(x) for x in obj]
+    return obj
+
+
+# ---------------------------------------------------------------------------
 # Section builders
 # ---------------------------------------------------------------------------
 
@@ -391,7 +431,7 @@ def _section_header(
 ) -> str:
     ts = generated_at.strftime("%Y-%m-%d %H:%M UTC")
     return (
-        f"# PathGrant Report — {client.get('organization_name', '')}\n\n"
+        f"# PathGrant Report: {client.get('organization_name', '')}\n\n"
         f"**Generated:** {ts}  \n"
         f"**Client ID:** `{client.get('client_id', '')}`  \n"
         f"**Grants source:** {n_verified} verified, {n_unverified} unverified "
@@ -399,21 +439,77 @@ def _section_header(
     )
 
 
+_STALE_DEADLINE_NOTE_RE = re.compile(r"^Deadline\s+\d{4}-\d{2}-\d{2}\s+is\s+")
+
+
+def _compute_fresh_deadline_note(close_date: str, today: str) -> str | None:
+    """Return a freshly-computed 'Deadline X is Y days away' string.
+
+    Uses today's actual date, not any date baked into the grant JSON.
+    Returns None if close_date is not a parseable ISO date.
+    """
+    try:
+        close_d = datetime.strptime(close_date, "%Y-%m-%d").date()
+        today_d = datetime.strptime(today, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+    days = (close_d - today_d).days
+    if days < 0:
+        return (
+            f"Deadline {close_date} passed {-days} days ago "
+            f"(current date {today})"
+        )
+    if days == 0:
+        return f"Deadline {close_date} is today (current date {today})"
+    return (
+        f"Deadline {close_date} is {days} days away "
+        f"(current date {today})"
+    )
+
+
 def _section_alerts(
     time_sensitive: list[dict[str, Any]],
     grant_lookup: dict[str, Any],
     cite,
+    today: str,
 ) -> str:
+    """Render the Alerts section. Deadline calculations use the supplied
+    today value, not whatever stale math is hardcoded into the grant's
+    time_sensitive_note field.
+    """
     if not time_sensitive:
         return ""
     time_sensitive = sorted(time_sensitive, key=lambda r: -r["score"])
-    parts = ["## ⏰ Alerts — time-sensitive deadlines", ""]
+    parts = ["## ⏰ Alerts: time-sensitive deadlines", ""]
     for r in time_sensitive:
         cite(r["grant_id"])
         grant = grant_lookup.get(r["grant_id"], {})
         close = grant.get("intake_close_date") or "deadline TBD"
-        note = grant.get("time_sensitive_note") or "In deadline window."
-        parts.append(f"- **{r['program_name']}** — close {close}, score {r['score']}")
+
+        # Always compute deadline math fresh from today's date.
+        fresh = (
+            _compute_fresh_deadline_note(close, today)
+            if close != "deadline TBD"
+            else None
+        )
+
+        # Grant's stored note may contain either:
+        #   (a) stale date math (starts with "Deadline <ISO> is ...") -- drop it
+        #   (b) genuine context (e.g., "Community-specific deadlines vary...") -- keep it
+        raw_note = (grant.get("time_sensitive_note") or "").strip()
+        if raw_note and _STALE_DEADLINE_NOTE_RE.match(raw_note):
+            raw_note = ""
+
+        if fresh and raw_note:
+            note = f"{fresh}. {raw_note}"
+        elif fresh:
+            note = fresh
+        elif raw_note:
+            note = raw_note
+        else:
+            note = "In deadline window."
+
+        parts.append(f"- **{r['program_name']}**, close {close}, score {r['score']}")
         parts.append(f"  _{note}_")
     parts.append("")
     return "\n".join(parts)
@@ -432,7 +528,7 @@ def _section_client_snapshot(client: dict[str, Any]) -> str:
         province = f"{province} ({city})"
     stage = client.get("stage", "")
     sectors = ", ".join(client.get("sectors") or [])
-    applicant = client.get("grant_applicant_entity", "—")
+    applicant = client.get("grant_applicant_entity", "-")
     return (
         f"## Client Snapshot\n\n"
         f"- **Name:** {name}\n"
@@ -476,14 +572,14 @@ def _section_eligibility_risks(
     risks: list[tuple[dict, str]] = []
     for r in scored:
         if r.get("eliminator") == "operator_flag_not_applicable":
-            risks.append((r, "operator flag — not applicable per record notes"))
+            risks.append((r, "operator flag: not applicable per record notes"))
             continue
         penalty_sum = _sum_penalty_points(r)
         if penalty_sum <= ELIGIBILITY_RISK_PENALTY_THRESHOLD:
             labels = "; ".join(
                 (p.get("reason") or p["label"]) for p in (r.get("penalties") or [])
             )
-            risks.append((r, f"penalty sum {penalty_sum} — {labels}"))
+            risks.append((r, f"penalty sum {penalty_sum}: {labels}"))
     if not risks:
         return ""
     parts = [
@@ -497,7 +593,7 @@ def _section_eligibility_risks(
     for r, reason in risks:
         cite(r["grant_id"])
         parts.append(
-            f"- **{r['program_name']}** — score {r['score']}  "
+            f"- **{r['program_name']}**, score {r['score']}  "
             f"\n  _{reason}_"
         )
     parts.append("")
@@ -532,7 +628,7 @@ def _section_research_queue(
         name = g.get("program_name", "")
         status = g.get("status", "")
         note = _first_sentence(g.get("notes") or "")
-        parts.append(f"- **{name}** — status `{status}`, `{gid}`")
+        parts.append(f"- **{name}**, status `{status}`, `{gid}`")
         if note:
             parts.append(f"  {note}")
     parts.append("")
@@ -551,7 +647,7 @@ def _section_advisory(
         "## Advisory Notes",
         "",
         "Informational records (`record_type: scoring_note`). Not standalone "
-        "funding opportunities — context for other applications.",
+        "funding opportunities; context for other applications.",
         "",
     ]
     for r in advisory:
@@ -559,7 +655,7 @@ def _section_advisory(
         cite(gid)
         grant = grant_lookup.get(gid) or unverified_lookup.get(gid) or {}
         note = _first_sentence(grant.get("notes") or "")
-        parts.append(f"- **{r['program_name']}** — `{gid}`")
+        parts.append(f"- **{r['program_name']}**, `{gid}`")
         if note:
             parts.append(f"  {note}")
     parts.append("")
@@ -677,7 +773,7 @@ def _section_90_day_plan(plan_md: str | None) -> str:
 # option letter) comes from intelligence.per_client.stragentic_cta.
 _STRAGENTIC_OPTIONS = {
     "A": {
-        "label": "Option A — DIY + Review",
+        "label": "Option A: DIY + Review",
         "price": "$1,500 / grant",
         "description": (
             "Stragentic reviews your self-drafted application before "
@@ -686,7 +782,7 @@ _STRAGENTIC_OPTIONS = {
         ),
     },
     "B": {
-        "label": "Option B — Stragentic Drafts",
+        "label": "Option B: Stragentic Drafts",
         "price": "$3,500 – $5,000 / grant",
         "description": (
             "Stragentic drafts the complete application based on your "
@@ -695,7 +791,7 @@ _STRAGENTIC_OPTIONS = {
         ),
     },
     "C": {
-        "label": "Option C — Full Service",
+        "label": "Option C: Full Service",
         "price": "$7,500 + 3% of awarded",
         "description": (
             "Stragentic owns the entire application lifecycle: narrative, "
@@ -786,6 +882,17 @@ def build_report(
     """
     generated_at = generated_at or datetime.now(timezone.utc)
 
+    # Em dash scrub: strip from every string in grant data (source JSON may
+    # contain em dashes in notes/amount_notes/time_sensitive_note/etc).
+    # Client and intelligence dicts are also scrubbed defensively, though
+    # intelligence.py already strips at generation time. Directive v2.0
+    # rule 9 enforcement.
+    client = _strip_em_dashes_recursive(client)
+    verified = _strip_em_dashes_recursive(verified)
+    unverified = _strip_em_dashes_recursive(unverified)
+    if intelligence is not None:
+        intelligence = _strip_em_dashes_recursive(intelligence)
+
     scored = match(client, verified)
     grant_lookup = {g["grant_id"]: g for g in verified}
     unverified_lookup = {g["grant_id"]: g for g in unverified}
@@ -867,7 +974,10 @@ def build_report(
         _section_header(client, generated_at, len(verified), len(unverified))
     )
 
-    alerts_md = _section_alerts(time_sensitive_alerts, grant_lookup, cite)
+    today_str = generated_at.strftime("%Y-%m-%d")
+    alerts_md = _section_alerts(
+        time_sensitive_alerts, grant_lookup, cite, today_str
+    )
     if alerts_md:
         sections.append(alerts_md)
 
@@ -875,7 +985,7 @@ def build_report(
 
     top_md = _section_ranked_bucket(
         program_grants, grant_lookup, cite,
-        header="Top Matches — Program Grants", limit=5,
+        header="Top Matches: Program Grants", limit=5,
         intelligence=intelligence,
     )
     if top_md:
