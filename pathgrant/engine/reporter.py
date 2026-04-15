@@ -685,6 +685,114 @@ def _section_advisory(
     return "\n".join(parts)
 
 
+def _section_grant_register(
+    scored: list[dict[str, Any]],
+    grant_lookup: dict[str, Any],
+    client: dict[str, Any],
+    cite,
+    intelligence: dict[str, Any] | None = None,
+) -> str:
+    """Render the Complete Grant Register as a single sortable table.
+
+    Includes every scored grant that was not eliminated: top matches,
+    sponsorships, research grants, tax credits, financing, and records
+    that surface in Eligibility Risks via penalty accumulation. Excludes:
+
+    - Records with a hard eliminator set (province_not_eligible or
+      operator_flag_not_applicable) since these are structural cuts and
+      contribute no value to a reference view.
+    - Advisory records (record_type == "scoring_note") which are not
+      grants.
+    - Unverified records which belong in the Research Queue section.
+
+    Every row is passed through cite() so the grants appear in the
+    Sources appendix even if they are not cited by any narrative section.
+    """
+    rows = [
+        r for r in scored
+        if r.get("eliminator") is None
+        and r.get("record_type") in (None, "grant")
+    ]
+    if not rows:
+        return ""
+    rows.sort(key=lambda r: -r["score"])
+
+    client_name = (
+        client.get("organization_name")
+        or client.get("client_id")
+        or "this client"
+    )
+
+    has_intel = bool(
+        intelligence
+        and (intelligence.get("metadata") or {}).get("top_grants_covered")
+    )
+    if has_intel:
+        intro = (
+            f"All {len(rows)} verified programs scored for {client_name}. "
+            "Top 3 programs include full application intelligence. "
+            "Remaining programs are listed for reference; consult the "
+            "Research Queue for unverified programs not shown here."
+        )
+    else:
+        intro = (
+            f"All {len(rows)} verified programs scored for {client_name}. "
+            "Consult the Research Queue for unverified programs not "
+            "shown here."
+        )
+
+    parts = [
+        "## Complete Grant Register",
+        "",
+        intro,
+        "",
+        (
+            "| Program Name | Funder | Amount Range | Score | Tier "
+            "| Stackable | Deadline |"
+        ),
+        "|---|---|---|---|---|---|---|",
+    ]
+
+    for r in rows:
+        grant = grant_lookup.get(r["grant_id"], {})
+        cite(r["grant_id"])
+
+        # Escape any pipe characters in program/funder names so they do
+        # not break the Markdown table.
+        name = (r.get("program_name") or "").replace("|", "/")
+        funder = (grant.get("funder") or "").replace("|", "/")
+        amount = _format_amount(grant).replace("|", "/")
+        score = r["score"]
+
+        tier_num = _tier_for_score(score)
+        tier_disp = str(tier_num) if tier_num is not None else "3"
+
+        stackable = grant.get("stackable")
+        if stackable is True:
+            stack_disp = "yes"
+        elif stackable is False:
+            stack_disp = "no"
+        else:
+            stack_disp = "?"
+
+        close = grant.get("intake_close_date")
+        intake_type = (grant.get("intake_type") or "").lower()
+        if close:
+            deadline_disp = close
+        elif intake_type == "rolling":
+            deadline_disp = "rolling"
+        else:
+            deadline_disp = "TBD"
+
+        parts.append(
+            f"| {name} | {funder} | {amount} | {score} | {tier_disp} | "
+            f"{stack_disp} | {deadline_disp} |"
+        )
+
+    parts.append("")
+    return "\n".join(parts)
+
+
 def _section_sources(
     cited_ids: list[str],
     lookup: dict[str, Any],
@@ -1258,6 +1366,17 @@ def build_report(
     if adv_md:
         sections.append(adv_md)
 
+    # Complete Grant Register -- single table view of every scored grant
+    # that is not a hard eliminator. Always rendered when there are any
+    # surviving rows. Sits after Advisory Notes and before the closing
+    # argument sections (90-day plan, CTA) so operators can scan the
+    # full landscape before the narrative closer.
+    register_md = _section_grant_register(
+        scored, grant_lookup, client, cite, intelligence=intelligence
+    )
+    if register_md:
+        sections.append(register_md)
+
     # 90-Day Action Plan and Stragentic CTA -- closing argument sections
     # that synthesize across the top grants, placed near the end of the
     # report. Only rendered when intelligence is present.
@@ -1383,6 +1502,49 @@ def _run_tests() -> int:
     _check(
         "_section_methodology pulls province gate points from scorer.py",
         f"+{PROVINCE_GATE_POINTS}" in methodology,
+    )
+
+    # _section_grant_register: header renders and table contains a row.
+    _fake_scored = [
+        {
+            "grant_id": "g1",
+            "program_name": "Test Grant",
+            "score": 85,
+            "signals": [],
+            "penalties": [],
+            "warnings": [],
+            "eliminator": None,
+            "grant_type": "program_grant",
+            "record_type": "grant",
+            "is_repayable": False,
+        },
+    ]
+    _fake_lookup = {
+        "g1": {
+            "grant_id": "g1",
+            "program_name": "Test Grant",
+            "funder": "Test Funder",
+            "amount_min": 10000,
+            "amount_max": 50000,
+            "stackable": True,
+            "intake_close_date": "2026-12-31",
+            "intake_type": "annual",
+        },
+    }
+    _fake_client = {"organization_name": "Test Client"}
+    _cited: list[str] = []
+
+    def _cite(gid: str) -> None:
+        if gid not in _cited:
+            _cited.append(gid)
+
+    register = _section_grant_register(
+        _fake_scored, _fake_lookup, _fake_client, _cite
+    )
+    _check(
+        "_section_grant_register renders header and at least one row",
+        "## Complete Grant Register" in register
+        and "| Test Grant | Test Funder |" in register,
     )
 
     print("=" * 60)
