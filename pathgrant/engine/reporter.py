@@ -45,6 +45,29 @@ from engine.matcher import (  # noqa: E402
     load_grants,
     match,
 )
+from engine.scorer import (  # noqa: E402
+    AMOUNT_LARGE_POINTS,
+    AMOUNT_MEDIUM_POINTS,
+    AMOUNT_SMALL_POINTS,
+    AMOUNT_UNCONFIRMED_PENALTY,
+    AMOUNT_UNKNOWN_POINTS,
+    CAPITAL_ONLY_MISMATCH_PENALTY,
+    CAPITAL_ONLY_VS_PRE_LAUNCH_PENALTY,
+    DEADLINE_UNKNOWN_PENALTY,
+    FN_GOVT_ONLY_PENALTY,
+    FOR_PROFIT_INELIGIBLE_PENALTY,
+    FOUNDER_AGE_INELIGIBLE_PENALTY,
+    GEOGRAPHIC_RISK_PENALTY,
+    INDIGENOUS_ALIGNMENT_POINTS,
+    MIN_OPERATING_YEARS_PENALTY,
+    NONPROFIT_INELIGIBLE_PENALTY,
+    PROVINCE_GATE_POINTS,
+    SECTOR_MATCH_POINTS,
+    SPORTS_TEAM_EXCLUSION_PENALTY,
+    STACKABLE_POINTS,
+    TIME_SENSITIVE_POINTS,
+    URL_COLLISION_PENALTY,
+)
 
 
 DEFAULT_VERIFIED_PATH = _PATHGRANT_ROOT / "data" / "grants_verified.json"
@@ -684,6 +707,197 @@ def _section_sources(
     return "\n".join(parts)
 
 
+def _section_methodology() -> str:
+    """Render the Methodology appendix.
+
+    Describes the actual scorer implementation in scorer.py. Signal and
+    penalty labels and point values are imported from scorer.py directly
+    so this section cannot drift from the code. No fabricated dimension
+    names.
+    """
+    parts = [
+        "## Methodology",
+        "",
+        "PathGrant produces a single composite score per grant, computed "
+        "deterministically by `pathgrant/engine/scorer.py`. The score is "
+        "the sum of positive signals and negative penalties, starting "
+        "from zero. There are no weighted dimensions, no separate priority "
+        "or fit scores, and no LLM involvement in the score itself.",
+        "",
+        "### Positive signals",
+        "",
+        "| Label | Points | Condition |",
+        "|---|---|---|",
+        (
+            f"| `province_eligible` | +{PROVINCE_GATE_POINTS} | "
+            "Client's province is in the grant's `provinces_eligible` list. "
+            "This is the scoring gate. Grants that fail this condition "
+            "become the `province_not_eligible` eliminator and receive no "
+            "signals or penalties. |"
+        ),
+        (
+            f"| `sector_overlap_xN` | +{SECTOR_MATCH_POINTS} per overlap | "
+            "One point block per sector in common between client and grant. "
+            "The label reflects the overlap count (e.g., `sector_overlap_x3` "
+            "for three matching sectors). |"
+        ),
+        (
+            f"| `indigenous_led_client_x_indigenous_grant` | "
+            f"+{INDIGENOUS_ALIGNMENT_POINTS} | "
+            "Fires when an Indigenous-led client meets a grant with "
+            "Indigenous-focused eligibility. |"
+        ),
+        (
+            f"| `amount_large` | +{AMOUNT_LARGE_POINTS} | "
+            "Grant's `amount_max` is at least $100,000. |"
+        ),
+        (
+            f"| `amount_medium` | +{AMOUNT_MEDIUM_POINTS} | "
+            "Grant's `amount_max` is between $25,000 and $100,000. |"
+        ),
+        (
+            f"| `amount_small` | +{AMOUNT_SMALL_POINTS} | "
+            "Grant's `amount_max` is below $25,000. |"
+        ),
+        (
+            f"| `amount_unknown` | +{AMOUNT_UNKNOWN_POINTS} | "
+            "Grant's `amount_max` is not a numeric value. |"
+        ),
+        (
+            f"| `stackable` | +{STACKABLE_POINTS} | "
+            "Grant explicitly allows stacking with other funding sources. |"
+        ),
+        (
+            f"| `time_sensitive` | +{TIME_SENSITIVE_POINTS} | "
+            "Grant's deadline is within the 60-day window from the report "
+            "generation date. |"
+        ),
+        "",
+        "### Penalties",
+        "",
+        "Penalties are grouped by severity. Any record whose penalty sum "
+        f"is at or below {ELIGIBILITY_RISK_PENALTY_THRESHOLD} surfaces in "
+        "the Eligibility Risks section, alongside operator-flagged "
+        "records.",
+        "",
+        "**Hard disqualifiers**",
+        "",
+        "| Label | Points | Condition |",
+        "|---|---|---|",
+        (
+            f"| `non_profit_ineligible` | {NONPROFIT_INELIGIBLE_PENALTY} | "
+            "Client is an NFP and the grant's exclusions require for-profit "
+            "status. |"
+        ),
+        (
+            f"| `for_profit_ineligible` | {FOR_PROFIT_INELIGIBLE_PENALTY} | "
+            "Client is a for-profit entity and the grant restricts "
+            "eligibility to NFP or charity status. |"
+        ),
+        (
+            f"| `founder_age_ineligible` | {FOUNDER_AGE_INELIGIBLE_PENALTY} | "
+            "Client founder's age falls outside the grant's declared age "
+            "window. |"
+        ),
+        (
+            f"| `first_nation_govt_only` | {FN_GOVT_ONLY_PENALTY} | "
+            "Grant requires First Nation government applicant status and "
+            "the client is not a First Nation government. |"
+        ),
+        "",
+        "**Structural mismatches**",
+        "",
+        "| Label | Points | Condition |",
+        "|---|---|---|",
+        (
+            f"| `capital_only_mismatch` | {CAPITAL_ONLY_MISMATCH_PENALTY} | "
+            "Grant funds capital projects only and the client's sector "
+            "footprint is not capital-intensive. |"
+        ),
+        (
+            f"| `sports_team_exclusion` | {SPORTS_TEAM_EXCLUSION_PENALTY} | "
+            "Grant exclusions list excludes sports teams and the client is "
+            "a sport organization. |"
+        ),
+        (
+            f"| `capital_only_vs_pre_launch_operating_need` | "
+            f"{CAPITAL_ONLY_VS_PRE_LAUNCH_PENALTY} | "
+            "Grant is capital-only and the client is pre-launch with "
+            "operating-cost funding needs. |"
+        ),
+        (
+            f"| `min_operating_years_vs_pre_launch` | "
+            f"{MIN_OPERATING_YEARS_PENALTY} | "
+            "Grant requires a minimum operating history and the client is "
+            "pre-launch. |"
+        ),
+        "",
+        "**Soft warnings**",
+        "",
+        "| Label | Points | Condition |",
+        "|---|---|---|",
+        (
+            f"| `geographic_risk_per_notes` | {GEOGRAPHIC_RISK_PENALTY} | "
+            "Operator notes on the grant record contain the phrase "
+            "'GEOGRAPHIC RISK', flagging a region-specific fit issue. |"
+        ),
+        (
+            f"| `amount_unconfirmed` | {AMOUNT_UNCONFIRMED_PENALTY} | "
+            "Grant amount is flagged unverified in the record's "
+            "`validation_warnings` field. |"
+        ),
+        (
+            f"| `deadline_unknown` | {DEADLINE_UNKNOWN_PENALTY} | "
+            "Grant deadline is missing or flagged unverified. |"
+        ),
+        (
+            f"| `url_collision` | {URL_COLLISION_PENALTY} | "
+            "Two grant records share a source URL, indicating possible "
+            "duplicate data that requires operator review. |"
+        ),
+        "",
+        "### Eliminators",
+        "",
+        "Eliminators are hard cuts that remove a grant from scoring "
+        "entirely. An eliminated grant produces no score, no signals, "
+        "and no penalties, and is tagged with the eliminator label only.",
+        "",
+        "| Label | Condition |",
+        "|---|---|",
+        (
+            "| `province_not_eligible` | Client's province is not in the "
+            "grant's `provinces_eligible` list. |"
+        ),
+        (
+            "| `operator_flag_not_applicable` | Grant notes contain "
+            "'does not apply to &lt;client name&gt;' or 'not applicable "
+            "to &lt;client name&gt;', matched case-insensitive against "
+            "the current client. |"
+        ),
+        "",
+        "### Tier cutoffs",
+        "",
+        f"- **Tier 1:** score >= {TIER_1_THRESHOLD}. Surfaced in Top "
+        "Matches and related ranked sections.",
+        f"- **Tier 2:** score {TIER_2_THRESHOLD} to {TIER_1_THRESHOLD - 1}. "
+        "Surfaced below Tier 1 in the same sections.",
+        f"- **Tier 3:** score below {TIER_2_THRESHOLD}. Dropped from the "
+        "report entirely. Never cited.",
+        "",
+        "### Disclaimer",
+        "",
+        "Grant amounts and deadlines are subject to change. Eligibility "
+        "criteria in this report are operator-reviewed summaries of the "
+        "source material; consult official funder sources before submitting "
+        "any application. PathGrant does not guarantee funding approval and "
+        "is not a substitute for professional grant writing services on "
+        "complex federal or technical submissions. Every grant record "
+        "cited was last verified at the date shown in the Sources appendix.",
+        "",
+    ]
+    return "\n".join(parts)
+
+
 # ---------------------------------------------------------------------------
 # Intelligence-driven sections: SR&ED, 90-day plan, Stragentic CTA.
 # Only rendered when build_report is called with intelligence=<dict>.
@@ -1060,9 +1274,13 @@ def build_report(
         if cta_md:
             sections.append(cta_md)
 
-    # Sources always last. Reference appendix -- sits after CTA so the
-    # CTA acts as the closing argument and Sources acts as the citation
-    # trail readers can scan to verify every grant claim in the report.
+    # Methodology appendix, always rendered. Describes the scorer so the
+    # reader can trace every signal and penalty back to code.
+    sections.append(_section_methodology())
+
+    # Sources always last. Reference appendix -- sits after Methodology
+    # so the appendix cluster (Methodology + Sources) closes the report
+    # after the narrative sections.
     full_lookup = {**grant_lookup, **unverified_lookup}
     sections.append(_section_sources(cited_ids, full_lookup))
 
@@ -1142,5 +1360,38 @@ def _cli() -> None:
     print(f"Cited {len(cited)} records")
 
 
+def _run_tests() -> int:
+    """Inline sanity suite. Runs when reporter.py is invoked with --test."""
+    ok = True
+
+    def _check(label: str, cond: bool) -> None:
+        nonlocal ok
+        status = "PASS" if cond else "FAIL"
+        print(f"[{status}] {label}")
+        if not cond:
+            ok = False
+
+    methodology = _section_methodology()
+    _check(
+        "_section_methodology renders the '## Methodology' header",
+        methodology.startswith("## Methodology\n"),
+    )
+    _check(
+        "_section_methodology contains no em dashes",
+        "\u2014" not in methodology,
+    )
+    _check(
+        "_section_methodology pulls province gate points from scorer.py",
+        f"+{PROVINCE_GATE_POINTS}" in methodology,
+    )
+
+    print("=" * 60)
+    print(f"REPORTER TESTS {'OK' if ok else 'FAIL'}")
+    return 0 if ok else 1
+
+
 if __name__ == "__main__":
+    if "--test" in sys.argv:
+        sys.argv.remove("--test")
+        sys.exit(_run_tests())
     _cli()
