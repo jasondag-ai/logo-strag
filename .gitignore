@@ -3,3 +3,6 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+
+# intelligence.py run artifacts -- local only, reproducible from source data
+pathgrant/intelligence/
