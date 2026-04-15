@@ -1115,5 +1115,68 @@
     "founder_age_restriction": null,
     "record_type": "grant",
     "validation_warnings": []
+  },
+  {
+    "program_name": "PacifiCan Business Scale-Up and Productivity Program",
+    "funder": "Pacific Economic Development Canada (PacifiCan)",
+    "funder_type": "federal",
+    "grant_type": "program_grant",
+    "is_repayable": true,
+    "amount_min": null,
+    "amount_max": 5000000,
+    "amount_notes": "Up to 50% of eligible project costs maximum $5M. Interest-free loan. Repayment within 6 years of project completion with 1-year grace period then 60 equal monthly payments. Reimbursement model — costs must be incurred and paid before claiming.",
+    "amount_verified": true,
+    "intake_type": "periodic",
+    "intake_open_date": null,
+    "intake_close_date": null,
+    "decision_weeks_min": null,
+    "decision_weeks_max": null,
+    "provinces_eligible": [
+      "BC"
+    ],
+    "sectors": [
+      "technology",
+      "innovation",
+      "health_technology",
+      "manufacturing",
+      "digital",
+      "life_sciences",
+      "clean_technology",
+      "advanced_manufacturing"
+    ],
+    "organization_types_eligible": [
+      "High-growth for-profit businesses incorporated in Canada",
+      "BC businesses operating in Canada for at least 2 years",
+      "Businesses with staffed operating facilities in BC"
+    ],
+    "eligibility_criteria": [
+      "Must be incorporated in Canada and operating in BC for at least 2 years",
+      "Must be a high-growth for-profit business",
+      "Must be scaling up and producing innovative goods, services, or technologies",
+      "Must have staffed operating facilities in BC",
+      "Must demonstrate confirmed funding from all other sources",
+      "At least 50% of proposed project costs from non-government sources"
+    ],
+    "exclusions": [
+      "CRITICAL: Repayable loan not a grant — full principal repayment required within 6 years",
+      "NFP organizations not eligible",
+      "Basic and applied R&D at Technology Readiness Level 1-6 not eligible",
+      "SR&ED credits received for same activities reduce PacifiCan funding — must disclose",
+      "BC operations required — national or Alberta-based companies not eligible"
+    ],
+    "stackable": true,
+    "url": "https://www.canada.ca/en/pacific-economic-development/services/funding/business-scale-up-productivity.html",
+    "contact_email": null,
+    "contact_phone": null,
+    "status": "active",
+    "last_verified": "2026-04-14",
+    "source_url": "https://www.canada.ca/en/pacific-economic-development/services/funding.html",
+    "notes": "REPAYABLE LOAN — will appear in FINANCING section only. Sacral Solutions deck lists this as a grant under Tier 2 funding strategy — this is inaccurate. PacifiCan BSP is a no-interest repayable contribution not a non-repayable grant. Previous intake closed April 2025 — verify current intake status before applying. SR&ED and PacifiCan interact: if claiming SR&ED credits on same activities, PacifiCan may reduce funding to keep total government assistance under 50% of project costs. Medical device commercialization and market scale-up are eligible activities. HealthTech Connex received $3.7M through this program for medical device commercialization — strong precedent for Sacral.",
+    "grant_id": "pacifican_business_scale_up_and_productivity_program",
+    "founder_age_restriction": null,
+    "record_type": "grant",
+    "validation_warnings": [
+      "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
+    ]
   }
 ]

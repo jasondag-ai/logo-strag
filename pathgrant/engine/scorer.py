@@ -48,14 +48,17 @@ URL_COLLISION_PENALTY = -2
 # list rather than hiding behind an implicit substring match.
 _FOR_PROFIT_EXCLUSION_PHRASES: tuple[str, ...] = (
     "non-profit organizations not eligible",
+    "non-profit not eligible",
+    "not-for-profit not eligible",
+    "nfp organizations not eligible",
+    "nfp and charitable organizations not eligible",
+    "npo not eligible",
+    "charities not eligible",
     "for-profit only",
     "for-profit businesses only",
     "profit-oriented",
     "profit-oriented businesses only",
     "incorporated for-profit",
-    "nfp and charitable organizations not eligible",
-    "charities not eligible",
-    "non-profit not eligible",
 )
 
 # Keywords in client legal_structure that identify an NFP or charity client.
