@@ -400,7 +400,10 @@ def parse_args() -> argparse.Namespace:
         "--skip-intelligence",
         "--report-only",
         action="store_true",
-        help="Use existing latest.json, skip intelligence regeneration",
+        help=(
+            "Use existing latest.json, skip intelligence regeneration. "
+            "Runs without ANTHROPIC_API_KEY since no API calls are made."
+        ),
     )
     p.add_argument(
         "--model",
@@ -437,7 +440,14 @@ def main() -> int:
         or profile.get("name")
         or client_id
     )
-    validate_api_key(dry_run=args.dry_run)
+    # API key is only required when intelligence.py will actually call
+    # the Anthropic API. Dry-run mode makes no calls, and
+    # --skip-intelligence reuses an existing latest.json, so both paths
+    # should run without a key. This keeps the reporter-only iteration
+    # loop truly $0 and credential-free.
+    key_required = not args.dry_run and not args.skip_intelligence
+    if key_required:
+        validate_api_key(dry_run=False)
 
     intelligence_path = make_intelligence_path(client_id)
     reports_root = args.reports_root or REPORTS_DIR
