@@ -833,10 +833,300 @@ def _print_dryrun_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Chunk 3 sanity check -- chunks 1, 2, and 3 all verified in one run.
+# Top-N selection + orchestrator + CLI (chunk 4)
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+def select_top_grants(
+    scored: list[dict], n: int = DEFAULT_TOP_N
+) -> list[dict]:
+    """Pick top N scored grants by score globally.
+
+    Filters: score >= MIN_TIER_SCORE (drops Tier 3) AND eliminator is
+    not set (drops province_not_eligible and operator_flag records).
+    Sorts by score descending before trimming -- defensive against
+    callers that pass unsorted input; matcher.match() already returns
+    sorted results so this is a no-op in the normal flow.
+    """
+    filtered = [
+        r for r in scored
+        if r.get("score", 0) >= MIN_TIER_SCORE
+        and not r.get("eliminator")
+    ]
+    filtered.sort(key=lambda r: -r.get("score", 0))
+    return filtered[:n]
+
+
+def generate_intelligence(
+    client_id: str,
+    *,
+    top_n: int = DEFAULT_TOP_N,
+    verified_path: Path = DEFAULT_VERIFIED_PATH,
+    unverified_path: Path = DEFAULT_UNVERIFIED_PATH,
+    intelligence_root: Path = DEFAULT_INTELLIGENCE_ROOT,
+    clients_root: Path = DEFAULT_CLIENTS_ROOT,
+    model: str = DEFAULT_MODEL,
+    temperature: float = DEFAULT_TEMPERATURE,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
+    dry_run: bool = False,
+    write_files: bool = True,
+    today: str | None = None,
+    _api_fn: Callable | None = None,
+    _sleep_fn: Callable | None = None,
+) -> dict:
+    """Generate narrative intelligence for one client.
+
+    Runs 9 Claude API calls (for top_n=3) in this order:
+      1-3: per-grant structured (one per top grant)
+      4:   SR&ED assessment (structured)
+      5:   90-day action plan (freeform markdown)
+      6:   Stragentic CTA (structured)
+      7-9: DIY starter kit (freeform markdown, one per top grant)
+
+    On a per-call failure the orchestrator writes a sentinel into the
+    corresponding section and logs metadata.api_failures, then continues
+    with the remaining calls. Resilient completion is always attempted.
+
+    When write_files=True and dry_run=False, the full intelligence dict
+    is written to both:
+        pathgrant/intelligence/<client_id>/<timestamp>.json
+        pathgrant/intelligence/<client_id>/latest.json
+
+    When dry_run=True the call graph runs with generate_*_section's
+    dry-run branch -- which prints the prompts to stdout via
+    _print_dryrun_prompt() and makes zero API calls -- and the output
+    is returned without writing files.
+    """
+    # Deferred matcher import keeps the chunk-3-only sanity check clean of
+    # cross-module dependencies; matcher only matters inside the full
+    # orchestrator run.
+    from engine.matcher import load_client_profile, load_grants, match
+
+    generated_at = datetime.now(timezone.utc)
+    today_str = today or generated_at.strftime("%Y-%m-%d")
+
+    client_path = clients_root / f"{client_id}_profile.json"
+    client = load_client_profile(client_path)
+
+    verified = load_grants(verified_path)
+    _unverified = load_grants(unverified_path)  # reserved for future sections
+
+    scored = match(client, verified)
+    top_results = select_top_grants(scored, n=top_n)
+    grant_lookup = {g["grant_id"]: g for g in verified}
+    top_grants_records = [grant_lookup[r["grant_id"]] for r in top_results]
+
+    system = build_system_prompt()
+    context_block = build_context_block(client, top_results)
+
+    out: dict = {
+        "metadata": {
+            "client_id": client_id,
+            "generated_at": generated_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "model": model,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "directive_version": DIRECTIVE_VERSION,
+            "top_n": top_n,
+            "top_grants_covered": [r["grant_id"] for r in top_results],
+            "api_calls_total": 0,
+            "api_call_log": [],
+            "api_failures": [],
+            "dry_run": dry_run,
+        },
+        "per_grant": {},
+        "per_client": {
+            "sred_assessment": None,
+            "90_day_action_plan": None,
+            "stragentic_cta": None,
+        },
+    }
+
+    # Shared kwargs for every call.
+    common = {
+        "system": system,
+        "context_block": context_block,
+        "model": model,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "dry_run": dry_run,
+        "_api_fn": _api_fn,
+        "_sleep_fn": _sleep_fn,
+    }
+
+    call_counter = 0
+
+    def _record_call(rec: dict, section: str, grant_id: str | None = None) -> None:
+        nonlocal call_counter
+        call_counter += 1
+        rec["call"] = call_counter
+        rec["section"] = section
+        if grant_id:
+            rec["grant_id"] = grant_id
+        out["metadata"]["api_call_log"].append(rec)
+        if not rec.get("success"):
+            failure = {
+                "call": call_counter,
+                "section": section,
+                "error": rec.get("error"),
+            }
+            if grant_id:
+                failure["grant_id"] = grant_id
+            out["metadata"]["api_failures"].append(failure)
+
+    # --- Calls 1-3: per-grant structured ---
+    for grant_result, grant_record in zip(top_results, top_grants_records):
+        gid = grant_result["grant_id"]
+        obj, rec = generate_structured_section(
+            **common,
+            task_instruction=build_per_grant_task(grant_record, grant_result),
+            schema=PER_GRANT_SCHEMA,
+            sentinel_factory=per_grant_sentinel,
+        )
+        _record_call(rec, "per_grant_structured", gid)
+        out["per_grant"][gid] = {"structured": obj, "diy_starter_kit": None}
+
+    # --- Call 4: SR&ED assessment ---
+    obj, rec = generate_structured_section(
+        **common,
+        task_instruction=build_sred_task(client, top_results),
+        schema=SRED_SCHEMA,
+        sentinel_factory=sred_sentinel,
+    )
+    _record_call(rec, "sred_assessment")
+    out["per_client"]["sred_assessment"] = obj
+
+    # --- Call 5: 90-day action plan (freeform) ---
+    md, rec = generate_freeform_section(
+        **common,
+        task_instruction=build_90_day_task(client, top_results, today_str),
+    )
+    _record_call(rec, "90_day_action_plan")
+    out["per_client"]["90_day_action_plan"] = md
+
+    # --- Call 6: Stragentic CTA ---
+    obj, rec = generate_structured_section(
+        **common,
+        task_instruction=build_cta_task(client, top_results),
+        schema=CTA_SCHEMA,
+        sentinel_factory=cta_sentinel,
+    )
+    _record_call(rec, "stragentic_cta")
+    out["per_client"]["stragentic_cta"] = obj
+
+    # --- Calls 7-9: DIY starter kit (freeform) ---
+    for grant_result, grant_record in zip(top_results, top_grants_records):
+        gid = grant_result["grant_id"]
+        md, rec = generate_freeform_section(
+            **common,
+            task_instruction=build_diy_starter_kit_task(grant_record, grant_result),
+        )
+        _record_call(rec, "diy_starter_kit", gid)
+        out["per_grant"][gid]["diy_starter_kit"] = md
+
+    out["metadata"]["api_calls_total"] = call_counter
+
+    # --- File outputs ---
+    if write_files and not dry_run:
+        client_root = intelligence_root / client_id
+        client_root.mkdir(parents=True, exist_ok=True)
+        ts = generated_at.strftime("%Y%m%d-%H%M")
+        timestamped_path = client_root / f"{ts}.json"
+        latest_path = client_root / "latest.json"
+        body = json.dumps(out, indent=2, ensure_ascii=False) + "\n"
+        timestamped_path.write_text(body, encoding="utf-8")
+        latest_path.write_text(body, encoding="utf-8")
+        out["metadata"]["timestamped_path"] = str(
+            timestamped_path.relative_to(_PATHGRANT_ROOT.parent)
+        )
+        out["metadata"]["latest_path"] = str(
+            latest_path.relative_to(_PATHGRANT_ROOT.parent)
+        )
+
+    return out
+
+
+def _cli() -> None:
+    """Argparse CLI entry point. Wraps generate_intelligence() with knobs
+    for every operationally relevant parameter, plus --dry-run and
+    --stdout modes that never touch disk."""
+    parser = argparse.ArgumentParser(
+        description="Generate PathGrant narrative intelligence via Claude API"
+    )
+    parser.add_argument("--client", required=True,
+                        help="client_id (e.g. emerge_academy)")
+    parser.add_argument("--top-n", type=int, default=DEFAULT_TOP_N)
+    parser.add_argument("--verified-path", type=Path,
+                        default=DEFAULT_VERIFIED_PATH)
+    parser.add_argument("--unverified-path", type=Path,
+                        default=DEFAULT_UNVERIFIED_PATH)
+    parser.add_argument("--intelligence-root", type=Path,
+                        default=DEFAULT_INTELLIGENCE_ROOT)
+    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
+    parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print all 9 prompts, make zero API calls, write zero files",
+    )
+    parser.add_argument(
+        "--stdout",
+        action="store_true",
+        help="Write intelligence JSON to stdout instead of disk",
+    )
+    parser.add_argument(
+        "--today",
+        default=None,
+        help="Override 'today' date for 90-day plan (YYYY-MM-DD)",
+    )
+    args = parser.parse_args()
+
+    out = generate_intelligence(
+        client_id=args.client,
+        top_n=args.top_n,
+        verified_path=args.verified_path,
+        unverified_path=args.unverified_path,
+        intelligence_root=args.intelligence_root,
+        model=args.model,
+        temperature=args.temperature,
+        max_tokens=args.max_tokens,
+        dry_run=args.dry_run,
+        write_files=not (args.stdout or args.dry_run),
+        today=args.today,
+    )
+
+    # Failure summary is always shown last so it is impossible to miss.
+    print()
+    print("=" * 72)
+    print("FAILURE SUMMARY")
+    print("=" * 72)
+    failures = out["metadata"]["api_failures"]
+    total = out["metadata"]["api_calls_total"]
+    if failures:
+        for f in failures:
+            gid_str = f" grant={f['grant_id']}" if f.get("grant_id") else ""
+            print(
+                f"  FAIL call {f['call']} ({f['section']}){gid_str}: "
+                f"{f.get('error', '?')}"
+            )
+        print(f"\n  Total: {len(failures)}/{total} calls failed")
+    else:
+        print(f"  All {total} calls completed "
+              f"({'dry-run, no API calls made' if args.dry_run else 'success'}).")
+    print()
+
+    if args.stdout:
+        print(json.dumps(out, indent=2, ensure_ascii=False))
+    else:
+        # Default and dry-run: show metadata only, not the full sentinel dump
+        print(json.dumps(out["metadata"], indent=2, ensure_ascii=False))
+
+
+# ---------------------------------------------------------------------------
+# Chunk 4 sanity check -- chunks 1, 2, 3, and 4 all verified in one run.
+# ---------------------------------------------------------------------------
+
+def _run_sanity_tests() -> int:
     _ok = True
     _results: list[tuple[str, bool, str]] = []
 
@@ -1093,6 +1383,30 @@ if __name__ == "__main__":
     _check("_get_anthropic_client is callable",
            callable(_get_anthropic_client))
 
+    # --- Chunk 4: select_top_grants ---
+    _scored = [
+        {"grant_id": "a", "score": 90, "eliminator": None},
+        {"grant_id": "b", "score": 20, "eliminator": None},   # Tier 3 -> drop
+        {"grant_id": "c", "score": 70,
+         "eliminator": "province_not_eligible"},              # eliminated -> drop
+        {"grant_id": "d", "score": 50, "eliminator": None},
+        {"grant_id": "e", "score": 45, "eliminator": None},
+        {"grant_id": "f", "score": 60, "eliminator": None},
+    ]
+    _top = select_top_grants(_scored, n=3)
+    _check("select_top_grants drops Tier 3 and eliminated records",
+           [r["grant_id"] for r in _top] == ["a", "f", "d"],
+           detail=str([r["grant_id"] for r in _top]))
+    _check("select_top_grants respects n=2",
+           len(select_top_grants(_scored, n=2)) == 2)
+    _check("select_top_grants handles empty input",
+           select_top_grants([], n=3) == [])
+    _check("select_top_grants returns list not generator",
+           isinstance(select_top_grants(_scored, n=3), list))
+
+    _check("generate_intelligence is callable", callable(generate_intelligence))
+    _check("_cli is callable", callable(_cli))
+
     # Summary
     for _label, _cond, _detail in _results:
         _marker = "PASS" if _cond else "FAIL"
@@ -1104,5 +1418,17 @@ if __name__ == "__main__":
     _total = len(_results)
     _passed = sum(1 for _, c, _d in _results if c)
     print("=" * 60)
-    print(f"CHUNK 3 OK ({_passed}/{_total})" if _ok else f"CHUNK 3 FAILED ({_passed}/{_total})")
-    sys.exit(0 if _ok else 1)
+    print(f"CHUNK 4 OK ({_passed}/{_total})" if _ok else f"CHUNK 4 FAILED ({_passed}/{_total})")
+    return 0 if _ok else 1
+
+
+# ---------------------------------------------------------------------------
+# Dispatch: --test runs the inline sanity suite, otherwise run the CLI
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    if "--test" in sys.argv:
+        sys.argv.remove("--test")
+        sys.exit(_run_sanity_tests())
+    else:
+        _cli()
