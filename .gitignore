@@ -6,3 +6,6 @@ venv/
 
 # intelligence.py run artifacts -- local only, reproducible from source data
 pathgrant/intelligence/
+
+# reporter.py run artifacts -- local only, reproducible from intelligence + source
+pathgrant/reports/
