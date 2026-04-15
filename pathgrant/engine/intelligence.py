@@ -37,6 +37,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import random
 import re
 import sys
 import time
@@ -475,9 +476,364 @@ warnings: {warnings}
 
 
 # ---------------------------------------------------------------------------
-# Chunk 2 sanity check -- every prompt builder must return a non-empty
-# string containing the expected markers. Sentinel checks from chunk 1 are
-# retained so a regression in either chunk is caught by a single run.
+# Parser -- strip optional code fences, json.loads, validate against schema
+# ---------------------------------------------------------------------------
+
+_CODE_FENCE_RE = re.compile(r"^```(?:json)?\s*\n?(.*?)\n?```\s*$", re.DOTALL)
+
+
+def strip_code_fences(text: str) -> str:
+    """Strip optional ```json``` (or plain ```) wrapping from a response."""
+    stripped = text.strip()
+    m = _CODE_FENCE_RE.match(stripped)
+    if m:
+        return m.group(1).strip()
+    return stripped
+
+
+def parse_json_response(
+    text: str, schema: dict
+) -> tuple[dict | None, str | None]:
+    """Return (parsed_obj, None) on success, (None, error_message) on
+    parse failure OR schema violation."""
+    body = strip_code_fences(text)
+    try:
+        obj = json.loads(body)
+    except json.JSONDecodeError as exc:
+        return None, f"JSON parse error: {exc}"
+    errors = validate_schema(obj, schema)
+    if errors:
+        return None, "Schema validation errors: " + "; ".join(errors)
+    return obj, None
+
+
+# ---------------------------------------------------------------------------
+# Anthropic API client (deferred import so dry-run / tests / reporter
+# import work without the SDK installed)
+# ---------------------------------------------------------------------------
+
+_anthropic_client_cache: Any = None
+
+
+def _get_anthropic_client():
+    """Lazily import the anthropic SDK and cache a client instance.
+
+    Raises RuntimeError if called without the SDK installed or without
+    ANTHROPIC_API_KEY in the environment. Module-level import is
+    deferred so dry-run mode, inline tests, and reporter.py imports all
+    work even when the SDK is not present.
+    """
+    global _anthropic_client_cache
+    if _anthropic_client_cache is not None:
+        return _anthropic_client_cache
+    try:
+        from anthropic import Anthropic  # type: ignore
+    except ImportError as exc:
+        raise RuntimeError(
+            "anthropic SDK not installed. pip install anthropic"
+        ) from exc
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY environment variable not set"
+        )
+    _anthropic_client_cache = Anthropic()
+    return _anthropic_client_cache
+
+
+def call_anthropic(
+    *,
+    system: str,
+    context_block: str,
+    task_instruction: str,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+) -> tuple[str, dict]:
+    """Make one Claude API call with prompt caching. Returns
+    (response_text, call_metadata).
+
+    The system prompt and context block are tagged with ephemeral
+    cache_control so they are reused across every call in a run. The
+    task-specific instruction is the only uncached portion.
+    """
+    client = _get_anthropic_client()
+    start = time.monotonic()
+    response = client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        system=[
+            {
+                "type": "text",
+                "text": system,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ],
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": context_block,
+                        "cache_control": {"type": "ephemeral"},
+                    },
+                    {
+                        "type": "text",
+                        "text": task_instruction,
+                    },
+                ],
+            }
+        ],
+    )
+    latency_ms = int((time.monotonic() - start) * 1000)
+
+    parts: list[str] = []
+    for block in response.content:
+        if hasattr(block, "text"):
+            parts.append(block.text)
+    text = "".join(parts)
+
+    usage = getattr(response, "usage", None)
+    metadata = {
+        "latency_ms": latency_ms,
+        "input_tokens": getattr(usage, "input_tokens", None) if usage else None,
+        "output_tokens": getattr(usage, "output_tokens", None) if usage else None,
+        "cache_creation_input_tokens":
+            getattr(usage, "cache_creation_input_tokens", None) if usage else None,
+        "cache_read_input_tokens":
+            getattr(usage, "cache_read_input_tokens", None) if usage else None,
+    }
+    return text, metadata
+
+
+# ---------------------------------------------------------------------------
+# Retry / backoff logic
+# ---------------------------------------------------------------------------
+
+def call_with_backoff(
+    *,
+    system: str,
+    context_block: str,
+    task_instruction: str,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    _api_fn: Callable | None = None,
+    _sleep_fn: Callable | None = None,
+) -> tuple[str | None, dict, str | None]:
+    """Call the API with exponential backoff + jitter on transient failures.
+
+    Retries up to MAX_API_RETRIES times. Delay schedule: (2**attempt) + jitter
+    seconds, i.e. ~1s, ~2s, ~4s with a [0, 1)s random jitter added.
+
+    Returns (response_text, metadata, error_message). On total failure
+    response_text is None and error_message is set to the last exception.
+
+    _api_fn defaults to call_anthropic; tests inject mock functions.
+    _sleep_fn defaults to time.sleep; tests inject a no-op to keep test
+    runtime fast.
+    """
+    api_fn = _api_fn or call_anthropic
+    sleep_fn = _sleep_fn or time.sleep
+
+    last_error: str | None = None
+    metadata: dict = {}
+    for attempt in range(MAX_API_RETRIES):
+        try:
+            text, metadata = api_fn(
+                system=system,
+                context_block=context_block,
+                task_instruction=task_instruction,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return text, metadata, None
+        except Exception as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+            if attempt < MAX_API_RETRIES - 1:
+                delay = (2 ** attempt) + random.uniform(0, 1)
+                sleep_fn(delay)
+    return None, metadata, last_error
+
+
+# ---------------------------------------------------------------------------
+# Section wrappers -- separate paths for structured (JSON) vs freeform
+# (markdown) so freeform calls never hit false JSON parse failures.
+# ---------------------------------------------------------------------------
+
+def generate_structured_section(
+    *,
+    system: str,
+    context_block: str,
+    task_instruction: str,
+    schema: dict,
+    sentinel_factory: Callable[[str], dict],
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    dry_run: bool,
+    _api_fn: Callable | None = None,
+    _sleep_fn: Callable | None = None,
+) -> tuple[dict, dict]:
+    """Generate a structured (JSON) section. Parse-retry once with a
+    stricter reprompt on parse / schema failure, then fall through to a
+    sentinel so the downstream report template never breaks.
+
+    Returns (parsed_obj_or_sentinel, call_record).
+    """
+    call_record: dict = {
+        "type": "structured",
+        "success": False,
+        "parse_retries": 0,
+        "api_attempts": 0,
+        "error": None,
+        "latency_ms": None,
+        "input_tokens": None,
+        "output_tokens": None,
+        "cache_creation_input_tokens": None,
+        "cache_read_input_tokens": None,
+    }
+
+    if dry_run:
+        _print_dryrun_prompt("STRUCTURED", system, context_block, task_instruction)
+        call_record["success"] = True
+        call_record["dry_run"] = True
+        return sentinel_factory("dry_run preview"), call_record
+
+    current_instruction = task_instruction
+    for parse_attempt in range(MAX_PARSE_RETRIES + 1):
+        call_record["api_attempts"] += 1
+        text, meta, err = call_with_backoff(
+            system=system,
+            context_block=context_block,
+            task_instruction=current_instruction,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            _api_fn=_api_fn,
+            _sleep_fn=_sleep_fn,
+        )
+        for k in (
+            "latency_ms", "input_tokens", "output_tokens",
+            "cache_creation_input_tokens", "cache_read_input_tokens",
+        ):
+            if k in meta:
+                call_record[k] = meta[k]
+        if err:
+            call_record["error"] = f"api_error: {err}"
+            return sentinel_factory(err), call_record
+
+        obj, parse_err = parse_json_response(text, schema)
+        if obj is not None:
+            call_record["success"] = True
+            return obj, call_record
+
+        call_record["parse_retries"] += 1
+        if parse_attempt < MAX_PARSE_RETRIES:
+            current_instruction = (
+                task_instruction
+                + f"\n\nNOTE: Previous response failed validation: {parse_err}\n"
+                "Return ONLY valid JSON matching the schema above. "
+                "No preamble, no code fences, no prose wrapper."
+            )
+        else:
+            call_record["error"] = f"parse_error: {parse_err}"
+            return sentinel_factory(parse_err or "parse error"), call_record
+
+    return sentinel_factory("max retries exceeded"), call_record
+
+
+def generate_freeform_section(
+    *,
+    system: str,
+    context_block: str,
+    task_instruction: str,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    dry_run: bool,
+    _api_fn: Callable | None = None,
+    _sleep_fn: Callable | None = None,
+) -> tuple[str, dict]:
+    """Generate a freeform (markdown) section.
+
+    Never hits JSON parse failures -- the response is taken as-is (after
+    stripping any code-fence wrapper) and embedded in the output. Only
+    true API-level failures (network, rate limit after retries) can
+    fail this call, in which case a sentinel string is returned.
+
+    Returns (markdown_body_or_sentinel, call_record).
+    """
+    call_record: dict = {
+        "type": "freeform",
+        "success": False,
+        "parse_retries": 0,
+        "api_attempts": 0,
+        "error": None,
+        "latency_ms": None,
+        "input_tokens": None,
+        "output_tokens": None,
+        "cache_creation_input_tokens": None,
+        "cache_read_input_tokens": None,
+    }
+
+    if dry_run:
+        _print_dryrun_prompt("FREEFORM", system, context_block, task_instruction)
+        call_record["success"] = True
+        call_record["dry_run"] = True
+        return "<dry_run preview>", call_record
+
+    call_record["api_attempts"] = 1
+    text, meta, err = call_with_backoff(
+        system=system,
+        context_block=context_block,
+        task_instruction=task_instruction,
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        _api_fn=_api_fn,
+        _sleep_fn=_sleep_fn,
+    )
+    for k in (
+        "latency_ms", "input_tokens", "output_tokens",
+        "cache_creation_input_tokens", "cache_read_input_tokens",
+    ):
+        if k in meta:
+            call_record[k] = meta[k]
+    if err:
+        call_record["error"] = f"api_error: {err}"
+        return freeform_sentinel(err), call_record
+
+    body = strip_code_fences(text)
+    call_record["success"] = True
+    return body, call_record
+
+
+def _print_dryrun_prompt(
+    kind: str, system: str, context_block: str, task_instruction: str
+) -> None:
+    """Pretty-print a prompt for dry-run review. Stdout only, no file IO."""
+    sep = "=" * 72
+    print(sep)
+    print(f"DRY RUN -- {kind} CALL")
+    print(sep)
+    print("--- system (cached) ---")
+    print(system)
+    print("\n--- context block (cached) ---")
+    truncated = context_block[:2000]
+    if len(context_block) > 2000:
+        truncated += "\n...[truncated]"
+    print(truncated)
+    print("\n--- task instruction ---")
+    print(task_instruction)
+    print(sep)
+    print()
+
+
+# ---------------------------------------------------------------------------
+# Chunk 3 sanity check -- chunks 1, 2, and 3 all verified in one run.
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -590,6 +946,153 @@ if __name__ == "__main__":
         _check(f"DIY task locks subheader: {_h}", _h in _diy)
     _check("DIY task embeds GRANT RECORD section", "GRANT RECORD:" in _diy)
 
+    # --- Chunk 3: parser ---
+    _check("strip_code_fences bare JSON",
+           strip_code_fences('{"x":1}') == '{"x":1}')
+    _check("strip_code_fences ```json wrap",
+           strip_code_fences('```json\n{"x":1}\n```') == '{"x":1}')
+    _check("strip_code_fences ``` wrap (no language)",
+           strip_code_fences('```\n{"x":1}\n```') == '{"x":1}')
+    _check("strip_code_fences trims outer whitespace",
+           strip_code_fences('  {"x":1}\n') == '{"x":1}')
+
+    _good_json = json.dumps(per_grant_sentinel("ok"))
+    _obj, _err = parse_json_response(_good_json, PER_GRANT_SCHEMA)
+    _check("parse_json_response valid returns (obj, None)",
+           _obj is not None and _err is None)
+
+    _obj, _err = parse_json_response("not json at all", PER_GRANT_SCHEMA)
+    _check("parse_json_response malformed returns (None, error)",
+           _obj is None and _err is not None and "parse error" in _err)
+
+    _obj, _err = parse_json_response('{"x": 1}', PER_GRANT_SCHEMA)
+    _check("parse_json_response schema mismatch returns (None, error)",
+           _obj is None and _err is not None and "missing" in _err)
+
+    _fenced = f'```json\n{_good_json}\n```'
+    _obj, _err = parse_json_response(_fenced, PER_GRANT_SCHEMA)
+    _check("parse_json_response strips code fence + parses",
+           _obj is not None and _err is None)
+
+    # --- Chunk 3: backoff (mocked API fn) ---
+    def _mock_ok(**kwargs):
+        return ("ok", {"latency_ms": 10, "input_tokens": 100, "output_tokens": 50})
+
+    _text, _meta, _err = call_with_backoff(
+        system="s", context_block="c", task_instruction="t",
+        model="m", temperature=0.3, max_tokens=100,
+        _api_fn=_mock_ok, _sleep_fn=lambda _s: None,
+    )
+    _check("backoff happy path returns text",
+           _text == "ok" and _err is None)
+
+    _fail_count = [0]
+
+    def _mock_retry_then_ok(**kwargs):
+        _fail_count[0] += 1
+        if _fail_count[0] < 3:
+            raise RuntimeError(f"transient {_fail_count[0]}")
+        return ("after retry", {"latency_ms": 10})
+
+    _text, _meta, _err = call_with_backoff(
+        system="s", context_block="c", task_instruction="t",
+        model="m", temperature=0.3, max_tokens=100,
+        _api_fn=_mock_retry_then_ok, _sleep_fn=lambda _s: None,
+    )
+    _check("backoff retries to success",
+           _text == "after retry" and _err is None)
+    _check("backoff attempted exactly 3 times", _fail_count[0] == 3)
+
+    def _mock_always_fail(**kwargs):
+        raise RuntimeError("permanent")
+
+    _text, _meta, _err = call_with_backoff(
+        system="s", context_block="c", task_instruction="t",
+        model="m", temperature=0.3, max_tokens=100,
+        _api_fn=_mock_always_fail, _sleep_fn=lambda _s: None,
+    )
+    _check("backoff all-fail returns None + error",
+           _text is None and _err is not None and "permanent" in _err)
+
+    # --- Chunk 3: generate_structured_section ---
+    _good_pg_json = json.dumps(per_grant_sentinel("mock"))
+
+    def _mock_struct_ok(**kwargs):
+        return (_good_pg_json, {"latency_ms": 10})
+
+    _obj, _record = generate_structured_section(
+        system="s", context_block="c", task_instruction="t",
+        schema=PER_GRANT_SCHEMA, sentinel_factory=per_grant_sentinel,
+        model="m", temperature=0.3, max_tokens=100, dry_run=False,
+        _api_fn=_mock_struct_ok, _sleep_fn=lambda _s: None,
+    )
+    _check("structured section happy success=True",
+           _record.get("success") is True)
+    _check("structured section happy parse_retries=0",
+           _record.get("parse_retries") == 0)
+
+    _parse_count = [0]
+
+    def _mock_bad_then_ok(**kwargs):
+        _parse_count[0] += 1
+        if _parse_count[0] == 1:
+            return ("not json", {"latency_ms": 10})
+        return (_good_pg_json, {"latency_ms": 10})
+
+    _obj, _record = generate_structured_section(
+        system="s", context_block="c", task_instruction="t",
+        schema=PER_GRANT_SCHEMA, sentinel_factory=per_grant_sentinel,
+        model="m", temperature=0.3, max_tokens=100, dry_run=False,
+        _api_fn=_mock_bad_then_ok, _sleep_fn=lambda _s: None,
+    )
+    _check("structured section parse-fail-then-retry succeeds",
+           _record.get("success") is True)
+    _check("structured section retried parse once",
+           _record.get("parse_retries") == 1)
+
+    def _mock_always_bad(**kwargs):
+        return ("still not json", {"latency_ms": 10})
+
+    _obj, _record = generate_structured_section(
+        system="s", context_block="c", task_instruction="t",
+        schema=PER_GRANT_SCHEMA, sentinel_factory=per_grant_sentinel,
+        model="m", temperature=0.3, max_tokens=100, dry_run=False,
+        _api_fn=_mock_always_bad, _sleep_fn=lambda _s: None,
+    )
+    _check("structured section double-parse-fail yields sentinel",
+           _record.get("success") is False)
+    _check("sentinel from double-parse-fail still validates schema",
+           not validate_schema(_obj, PER_GRANT_SCHEMA))
+
+    # --- Chunk 3: generate_freeform_section ---
+    def _mock_freeform_ok(**kwargs):
+        return ("### Weeks 1-4\n- action item", {"latency_ms": 10})
+
+    _md, _record = generate_freeform_section(
+        system="s", context_block="c", task_instruction="t",
+        model="m", temperature=0.3, max_tokens=100, dry_run=False,
+        _api_fn=_mock_freeform_ok, _sleep_fn=lambda _s: None,
+    )
+    _check("freeform section happy returns md", "Weeks 1-4" in _md)
+    _check("freeform section happy success=True",
+           _record.get("success") is True)
+
+    def _mock_freeform_fail(**kwargs):
+        raise RuntimeError("api down")
+
+    _md, _record = generate_freeform_section(
+        system="s", context_block="c", task_instruction="t",
+        model="m", temperature=0.3, max_tokens=100, dry_run=False,
+        _api_fn=_mock_freeform_fail, _sleep_fn=lambda _s: None,
+    )
+    _check("freeform section api-fail yields sentinel string",
+           "<generation failed" in _md)
+    _check("freeform section api-fail success=False",
+           _record.get("success") is False)
+
+    _check("_get_anthropic_client is callable",
+           callable(_get_anthropic_client))
+
     # Summary
     for _label, _cond, _detail in _results:
         _marker = "PASS" if _cond else "FAIL"
@@ -601,5 +1104,5 @@ if __name__ == "__main__":
     _total = len(_results)
     _passed = sum(1 for _, c, _d in _results if c)
     print("=" * 60)
-    print(f"CHUNK 2 OK ({_passed}/{_total})" if _ok else f"CHUNK 2 FAILED ({_passed}/{_total})")
+    print(f"CHUNK 3 OK ({_passed}/{_total})" if _ok else f"CHUNK 3 FAILED ({_passed}/{_total})")
     sys.exit(0 if _ok else 1)
