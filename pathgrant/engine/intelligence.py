@@ -95,6 +95,14 @@ PathGrant Directive v2.0 -- mandatory tone rules:
 7. Active voice, present tense, direct address.
 8. If a section is inapplicable for this specific client-grant pair, say so in one sentence and explain why. Do not pad.
 
+Prose style rules (operator tone, not consultant-speak):
+
+9. Do not use em dashes. Replace with a comma, period, colon, or rewrite the sentence.
+10. Do not use the construction "this is not X, it is Y" or "not X but Y" as a rhetorical device. State the positive directly.
+11. Do not use "it is worth noting", "it is important to", "this is critical", or similar throat-clearing phrases. State the point.
+12. Do not use "robust", "nuanced", "holistic", "leverage" (as a verb), or "ecosystem" unless quoting funder language directly.
+13. Write in plain declarative sentences.
+
 Output format rules:
 - When asked for JSON, return ONLY JSON. No preamble, no code fences, no prose wrapper.
 - When asked for markdown, return ONLY the markdown body. No top-level ## header (the caller adds that). Use ### sub-headers only where instructed.
@@ -412,25 +420,138 @@ Use EXACTLY these ### sub-headers in this order -- do not add, remove, rename, o
 """
 
 
-def build_cta_task(client: dict, top_grants: list[dict]) -> str:
-    """Stragentic CTA structured JSON task (call 6, once per report)."""
+def _days_between(today_str: str, date_str: str) -> int | None:
+    """Return integer days from today_str to date_str (both YYYY-MM-DD).
+
+    Returns None if either date fails to parse. Negative values mean the
+    target date is in the past.
+    """
+    try:
+        today_d = datetime.strptime(today_str, "%Y-%m-%d").date()
+        target_d = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+    return (target_d - today_d).days
+
+
+def _amount_midpoint(grant: dict) -> int | None:
+    """Return a realistic midpoint for a grant's award amount, in dollars.
+
+    Uses amount_min and amount_max from the grant record. Returns None if
+    neither is set (amount not publicly stated).
+    """
+    lo = grant.get("amount_min")
+    hi = grant.get("amount_max")
+    if isinstance(lo, (int, float)) and isinstance(hi, (int, float)):
+        return int((lo + hi) / 2)
+    if isinstance(hi, (int, float)):
+        return int(hi)
+    if isinstance(lo, (int, float)):
+        return int(lo)
+    return None
+
+
+def build_cta_task(
+    client: dict,
+    top_grants: list[dict],
+    top_grant_records: list[dict],
+    today_str: str,
+) -> str:
+    """Stragentic CTA structured JSON task (call 6, once per report).
+
+    Injects a deadline block for any time-sensitive top grant, and a top-grant
+    amount block so the model can compute concrete ROI math. The prompt
+    builder is responsible for surfacing this data, not the model.
+    """
     top_names = ", ".join(r["program_name"] for r in top_grants[:3]) or "(none)"
-    return f"""TASK: Generate the Stragentic engagement CTA narrative for this client. The reporter template hardcodes the three engagement options and their prices -- you do NOT list them. Your job is the per-client narrative.
+
+    # --- Deadline injection block ---
+    deadline_lines: list[str] = []
+    for r, g in zip(top_grants, top_grant_records):
+        if g.get("time_sensitive") is not True:
+            continue
+        close = g.get("intake_close_date") or "deadline TBD"
+        days = _days_between(today_str, close) if close != "deadline TBD" else None
+        if days is not None:
+            days_phrase = f"{days} days from today ({today_str})"
+        else:
+            days_phrase = "deadline date not parseable"
+        deadline_lines.append(
+            f"- {r['program_name']}: close {close}, {days_phrase}"
+        )
+    if deadline_lines:
+        deadline_block = (
+            "TIME-SENSITIVE GRANTS IN THIS REPORT (you MUST reference these "
+            "in summary_of_delivered and recommendation_rationale; you MUST "
+            "NOT claim 'no immediate hard deadlines'):\n"
+            + "\n".join(deadline_lines)
+        )
+    else:
+        deadline_block = (
+            "TIME-SENSITIVE GRANTS IN THIS REPORT: none. "
+            "You may state that no immediate hard deadlines were flagged."
+        )
+
+    # --- Top-grant amount block for concrete ROI math ---
+    if top_grant_records:
+        top_grant = top_grant_records[0]
+        top_grant_name = top_grants[0]["program_name"]
+        mid = _amount_midpoint(top_grant)
+        amount_notes = top_grant.get("amount_notes") or ""
+        if mid is not None:
+            fee_c = 7500 + int(mid * 0.03)
+            multiple = mid // fee_c if fee_c > 0 else 0
+            amount_block = (
+                f"TOP GRANT AMOUNT DATA (use for ROI math):\n"
+                f"- Top grant name: {top_grant_name}\n"
+                f"- amount_min: {top_grant.get('amount_min')}\n"
+                f"- amount_max: {top_grant.get('amount_max')}\n"
+                f"- amount_notes: {amount_notes}\n"
+                f"- Realistic midpoint: ${mid:,}\n"
+                f"- Option C fee at midpoint: $7,500 + 3% of ${mid:,} = "
+                f"${fee_c:,}\n"
+                f"- Return multiple: ${mid:,} / ${fee_c:,} = ~{multiple}x"
+            )
+        else:
+            amount_block = (
+                f"TOP GRANT AMOUNT DATA:\n"
+                f"- Top grant name: {top_grant_name}\n"
+                f"- amount_min: {top_grant.get('amount_min')}\n"
+                f"- amount_max: {top_grant.get('amount_max')}\n"
+                f"- amount_notes: {amount_notes}\n"
+                f"- Amount not publicly stated. "
+                f"ROI math must say so explicitly and cite amount_notes. "
+                f"Do not invent a dollar figure."
+            )
+    else:
+        top_grant_name = "(none)"
+        amount_block = "TOP GRANT AMOUNT DATA: no top grants supplied."
+
+    return f"""TASK: Generate the Stragentic engagement CTA narrative for this client. The reporter template hardcodes the three engagement options and their prices; you do NOT list them. Your job is the per-client narrative.
 
 Pricing reference (use for ROI math only, do not echo in output):
-- Option A: DIY + Review -- $1,500/grant
-- Option B: Stragentic Drafts -- $3,500-5,000/grant
-- Option C: Full Service -- $7,500 + 3% of awarded
+- Option A: DIY + Review, $1,500/grant
+- Option B: Stragentic Drafts, $3,500 to $5,000/grant
+- Option C: Full Service, $7,500 + 3% of awarded
 
 Top-ranked grants for this client: {top_names}
+
+{deadline_block}
+
+{amount_block}
+
+ROI math format requirement:
+Write roi_math using the actual numbers above. Required format:
+"Option C fee on {top_grant_name} is $7,500 plus 3% of awarded. If awarded $<realistic midpoint from block above>, total fee is $<calculated fee>, against $<award amount> received, ~<X>x return."
+If the amount is not publicly stated, state that explicitly in roi_math and cite amount_notes. Do not use vague language like "returns the engagement cost many times over" or "covers the fee several times".
 
 Return ONLY this JSON:
 
 {{
-  "summary_of_delivered": "<1-2 sentences recapping what PathGrant produced: record count context, top grants, time-sensitive alerts if any>",
+  "summary_of_delivered": "<1-2 sentences recapping what PathGrant produced: record count context, top grants, time-sensitive deadlines by name with days remaining if any exist>",
   "recommended_option": "A" | "B" | "C",
-  "recommendation_rationale": "<2-3 sentences specific to this client's stage, budget, and top grant>",
-  "roi_math": "<One sentence: 'Option C fee of $X vs top grant $Y: one approval covers this Z times over.' Use the actual top grant amount from the context block.>"
+  "recommendation_rationale": "<2-3 sentences specific to this client's stage, budget, top grant, and any time-sensitive deadlines surfaced above>",
+  "roi_math": "<One sentence in the required format above, with actual calculated numbers>"
 }}
 """
 
@@ -1006,7 +1127,9 @@ def generate_intelligence(
     # --- Call 6: Stragentic CTA ---
     obj, rec = generate_structured_section(
         **common,
-        task_instruction=build_cta_task(client, top_results),
+        task_instruction=build_cta_task(
+            client, top_results, top_grants_records, today_str
+        ),
         schema=CTA_SCHEMA,
         sentinel_factory=cta_sentinel,
     )
@@ -1219,11 +1342,96 @@ def _run_sanity_tests() -> int:
     _check("90-day task does NOT include top-level ## header",
            "\n## " not in _plan)
 
-    _cta = build_cta_task(_fake_client, _fake_results)
+    _fake_grant_records = [
+        {
+            "grant_id": "a",
+            "program_name": "Grant A",
+            "time_sensitive": True,
+            "intake_close_date": "2026-05-31",
+            "amount_min": 50000,
+            "amount_max": 200000,
+            "amount_notes": "Confirmed range per funder.",
+        },
+        {
+            "grant_id": "b",
+            "program_name": "Grant B",
+            "time_sensitive": False,
+            "intake_close_date": None,
+            "amount_min": None,
+            "amount_max": None,
+            "amount_notes": "Amount not publicly stated.",
+        },
+        {
+            "grant_id": "c",
+            "program_name": "Grant C",
+            "time_sensitive": False,
+            "intake_close_date": None,
+            "amount_min": None,
+            "amount_max": None,
+            "amount_notes": "",
+        },
+    ]
+    _cta = build_cta_task(
+        _fake_client, _fake_results, _fake_grant_records, "2026-04-15"
+    )
     for _letter in ("A", "B", "C"):
         _check(f"cta task includes Option {_letter}", f"Option {_letter}" in _cta)
     _check("cta task schema includes recommended_option",
            '"recommended_option"' in _cta)
+    _check("cta task injects time-sensitive deadline block",
+           "TIME-SENSITIVE GRANTS IN THIS REPORT" in _cta
+           and "Grant A" in _cta
+           and "2026-05-31" in _cta)
+    _check("cta task computes days remaining for time-sensitive grant",
+           "46 days from today (2026-04-15)" in _cta)
+    _check("cta task bans 'no immediate hard deadlines' when deadlines exist",
+           "you MUST NOT claim 'no immediate hard deadlines'" in _cta)
+    _check("cta task injects top grant amount block with midpoint",
+           "TOP GRANT AMOUNT DATA" in _cta and "$125,000" in _cta)
+    _check("cta task computes concrete Option C fee",
+           "$7,500 + 3% of $125,000 = $11,250" in _cta)
+    _check("cta task bans vague ROI language",
+           "Do not use vague language" in _cta)
+
+    # CTA with no time-sensitive grants: allows the "none" clause.
+    _fake_records_no_deadline = [
+        {**r, "time_sensitive": False, "intake_close_date": None}
+        for r in _fake_grant_records
+    ]
+    _cta_none = build_cta_task(
+        _fake_client, _fake_results, _fake_records_no_deadline, "2026-04-15"
+    )
+    _check("cta task handles no time-sensitive grants",
+           "TIME-SENSITIVE GRANTS IN THIS REPORT: none" in _cta_none)
+
+    # CTA with unknown top-grant amount: ROI math must flag explicitly.
+    _fake_records_no_amount = [
+        {**r, "amount_min": None, "amount_max": None,
+         "amount_notes": "Amount not publicly stated."}
+        for r in _fake_grant_records
+    ]
+    _cta_noamt = build_cta_task(
+        _fake_client, _fake_results, _fake_records_no_amount, "2026-04-15"
+    )
+    _check("cta task handles unknown top-grant amount",
+           "Amount not publicly stated" in _cta_noamt
+           and "Do not invent a dollar figure" in _cta_noamt)
+
+    # _days_between: core date arithmetic used by the deadline block.
+    _check("_days_between future date returns positive days",
+           _days_between("2026-04-15", "2026-05-31") == 46)
+    _check("_days_between past date returns negative",
+           _days_between("2026-04-15", "2026-04-01") == -14)
+    _check("_days_between bad format returns None",
+           _days_between("2026-04-15", "not-a-date") is None)
+
+    # _amount_midpoint: used for ROI calculations.
+    _check("_amount_midpoint with min and max returns midpoint",
+           _amount_midpoint({"amount_min": 50000, "amount_max": 200000}) == 125000)
+    _check("_amount_midpoint with only max returns max",
+           _amount_midpoint({"amount_min": None, "amount_max": 100000}) == 100000)
+    _check("_amount_midpoint with no amounts returns None",
+           _amount_midpoint({"amount_min": None, "amount_max": None}) is None)
 
     _diy = build_diy_starter_kit_task(_fake_grant, _fake_matcher)
     _LOCKED_DIY_HEADERS = (
