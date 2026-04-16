@@ -9,3 +9,6 @@ pathgrant/intelligence/
 
 # reporter.py run artifacts -- local only, reproducible from intelligence + source
 pathgrant/reports/
+
+# convenience copies of reports at repo root (created by cp for retrieval)
+latest_*_report.md
