@@ -167,7 +167,7 @@
     "status": "active",
     "last_verified": "2026-04-14",
     "source_url": "https://sasksport.ca/funding-opportunities/funding-and-grants/indigenous-sport-community-grant/",
-    "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Minimum one year of operation required. Emerge Academy is pre-launch. May not qualify until after first year of operations. Saskatchewan-specific. Highly relevant sector alignment. Contact Garett Mathiason at Sask Sport to confirm pre-launch eligibility. Amount is modest ($1K-$5K) but stackable and SK-specific.",
+    "notes": "ELIGIBILITY RISK FOR EMERGE ACADEMY: Minimum one year of operation required. Emerge Academy is pre-launch. May not qualify until after first year of operations. Saskatchewan-specific. Highly relevant sector alignment. Contact Garrett Mathiason at Sask Sport to confirm pre-launch eligibility. Amount is modest ($1K-$5K) but stackable and SK-specific.",
     "grant_id": "sask_sport_indigenous_community_sport_development_grant",
     "validation_warnings": [
       "deadline_unknown - verify before using in Tier 1 or Tier 2 classification"
@@ -395,9 +395,9 @@
     "contact_email": "fnmr@gov.sk.ca",
     "contact_phone": "306-787-4081",
     "status": "active",
-    "last_verified": "2026-04-14",
+    "last_verified": "2026-04-16",
     "source_url": "https://www.saskatchewan.ca/en/Government/News-and-Media/2026/april/02/grant-programs-open-to-support-indigenous-community-safety-partnerships-and-growth",
-    "notes": "TIME CRITICAL: Deadline May 31 2026 — 47 days from today. Second intake opens September 1 2026. NEW DISCOVERY: Announced April 2 2026. Not in any prior PathGrant database. High relevance for Emerge Academy — student achievement and strong families priority areas directly map to Indigenous hockey academy mandate. Apply immediately. Contact fnmr@gov.sk.ca for full eligibility guidelines.",
+    "notes": "TIME CRITICAL: Deadline May 31 2026. Second intake opens September 1 2026. NEW DISCOVERY: Announced April 2 2026. Not in any prior PathGrant database. High relevance for Emerge Academy: student achievement and strong families priority areas directly map to Indigenous hockey academy mandate. Apply immediately. Contact fnmr@gov.sk.ca for full eligibility guidelines. APPLICATION PROCESS: Online-only through the government website. Budget form must be completed and uploaded as part of the online application (confirmed by Pooja Kansra, Administrative Assistant, First Nations and Metis Relations, Ministry of Government Relations, pooja.kansra2@gov.sk.ca, 306-798-0183). Administration costs capped at maximum 10% of requested funding. In-kind contributions strongly recommended (office space, materials, staff time, etc.). Budget submitted to fnmr@gov.sk.ca as part of online application.",
     "grant_id": "saskatchewan_first_nations_and_metis_community_partnership",
     "validation_warnings": [
       "amount_unconfirmed - verify before using in client report"
@@ -879,8 +879,8 @@
     "amount_verified": true,
     "intake_type": "annual",
     "intake_open_date": null,
-    "intake_close_date": null,
-    "deadline_notes": "Southern community applications must be postmarked by February 28. Northern community applications must be postmarked by April 1 or October 1. Langenburg is a southern community: applicable deadline is February 28 annually.",
+    "intake_close_date": "2026-04-01",
+    "deadline_notes": "Southern community applications must be postmarked by April 1 (confirmed by phone with Garrett Mathiason, 2026-04-16). Northern community applications must be postmarked by April 1 or October 1. Langenburg is a southern community: applicable deadline is April 1 annually.",
     "decision_weeks_min": null,
     "decision_weeks_max": null,
     "provinces_eligible": [
@@ -918,7 +918,7 @@
     "contact_email": "gmathiason@sasksport.ca",
     "contact_phone": "306-220-6699",
     "status": "active",
-    "last_verified": "2026-04-15",
+    "last_verified": "2026-04-16",
     "source_url": "https://sasklotteries.ca/trust-funds-grants/",
     "notes": "ACCESS PATH FOR EMERGE ACADEMY: Apply through Town of Langenburg or a Treaty 4 First Nation community as the municipal/First Nation intake point. Emerge Academy as an NFP would receive funding through the community intake rather than directly. Alternatively apply through Sask Sport as a member organization once incorporated. Over 1,200 organizations receive direct funding through this system — it is the primary sport funding mechanism in Saskatchewan. Indigenous people explicitly listed as priority population.",
     "grant_id": "saskatchewan_lotteries_community_grant_program",
