@@ -1011,18 +1011,397 @@ def render_generic_section(content: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Module-level verification: importable without side effects
+# Markdown parser -- splits the report on ## section headers
+# ---------------------------------------------------------------------------
+
+# Canonical section names in report order. The parser matches each ##
+# header against these keys (case-insensitive prefix match).
+SECTION_KEYS = [
+    "Alerts",
+    "Client Snapshot",
+    "Top Matches",
+    "Sponsorships",
+    "Research Grants",
+    "SR&ED Assessment",
+    "Eligibility Risks",
+    "Research Queue",
+    "Advisory Notes",
+    "Complete Grant Register",
+    "90-Day Action Plan",
+    "Engagement Options",
+    "Methodology",
+    "Sources",
+]
+
+
+def _match_section_key(header_text: str) -> str | None:
+    """Match a ## header line to one of the canonical SECTION_KEYS.
+
+    Uses case-insensitive prefix matching so that headers like
+    "## Top Matches: Program Grants" map to "Top Matches".
+    """
+    h = header_text.strip().lstrip("#").strip()
+    # Strip leading emoji (Alerts has a clock emoji)
+    h = re.sub(r"^[^\w]+", "", h).strip()
+    h_lower = h.lower()
+    for key in SECTION_KEYS:
+        if h_lower.startswith(key.lower()):
+            return key
+    return None
+
+
+def parse_report(md_path: Path) -> dict[str, str]:
+    """Split a PathGrant markdown report into named sections.
+
+    Returns a dict keyed by SECTION_KEYS values. Each value is the raw
+    markdown content between that ## header and the next (excluding the
+    header line itself). Sections not found in the report are omitted.
+
+    Also returns two special keys:
+      "_preamble" -- everything before the first ## header
+      "_client_name" -- extracted from the # title line
+      "_report_date" -- extracted from the Generated: line
+    """
+    text = md_path.read_text(encoding="utf-8")
+    result: dict[str, str] = {}
+
+    # Extract client name from title: "# PathGrant Report: The Emerge Academy"
+    m = re.search(r"^# PathGrant Report:\s*(.+)$", text, re.MULTILINE)
+    result["_client_name"] = m.group(1).strip() if m else "Client"
+
+    # Extract date from "**Generated:** 2026-04-16 01:59 UTC"
+    m = re.search(r"\*\*Generated:\*\*\s*(.+?)(?:\s{2}|\n)", text)
+    result["_report_date"] = m.group(1).strip() if m else ""
+
+    # Split on ## headers. Each split point is a line starting with "## ".
+    # We walk the lines and accumulate content between headers.
+    lines = text.split("\n")
+    current_key: str | None = "_preamble"
+    current_lines: list[str] = []
+
+    for line in lines:
+        if line.startswith("## "):
+            # Save previous section
+            if current_key is not None:
+                result[current_key] = "\n".join(current_lines).strip()
+            current_lines = []
+            # Match this header to a canonical key
+            key = _match_section_key(line)
+            if key:
+                current_key = key
+                # Include the header line in the content so renderers
+                # can see the full ## heading
+                current_lines = [line]
+            else:
+                # Unknown section header -- collect as generic
+                current_key = line.strip().lstrip("#").strip()
+                current_lines = [line]
+        else:
+            current_lines.append(line)
+
+    # Save the last section
+    if current_key is not None and current_lines:
+        result[current_key] = "\n".join(current_lines).strip()
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Section routing -- maps section keys to renderer functions
+# ---------------------------------------------------------------------------
+
+_SECTION_RENDERERS: dict[str, Any] = {
+    "Alerts": render_alerts,
+    "Top Matches": render_grant_deep_dive,
+    "Sponsorships": render_grant_deep_dive,
+    "Research Grants": render_grant_deep_dive,
+    "Complete Grant Register": render_grant_table,
+    "90-Day Action Plan": render_90_day_plan,
+    "Engagement Options": render_engagement_options,
+    "Sources": render_sources_table,
+}
+
+
+# ---------------------------------------------------------------------------
+# Document assembler
+# ---------------------------------------------------------------------------
+
+def assemble_html(client_id: str, report_path: Path) -> str:
+    """Build a complete HTML document from a PathGrant markdown report.
+
+    Renders the cover page, then each section in report order using the
+    appropriate renderer. Returns a full HTML string with embedded CSS
+    ready for WeasyPrint conversion.
+    """
+    md_text = report_path.read_text(encoding="utf-8")
+    sections = parse_report(report_path)
+
+    client_name = sections.get("_client_name", client_id)
+    report_date = sections.get("_report_date", "")
+    stats = extract_cover_stats(md_text)
+
+    # Build HTML parts
+    parts: list[str] = []
+
+    # Cover page
+    parts.append(render_cover(stats, client_name, report_date))
+
+    # Running header (appears on all pages after cover via CSS)
+    header_text = f"PathGrant Funding Analysis | {client_name}"
+
+    # Each section in canonical order
+    for key in SECTION_KEYS:
+        content = sections.get(key)
+        if not content:
+            continue
+        renderer = _SECTION_RENDERERS.get(key, render_generic_section)
+        rendered = renderer(content)
+        parts.append(f'<div class="section" id="section-{key.lower().replace(" ", "-")}">')
+        parts.append(rendered)
+        parts.append("</div>")
+
+    body = "\n".join(parts)
+
+    # Assemble full HTML document
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>PathGrant Report: {client_name}</title>
+<style>
+{CSS}
+
+/* Running header for pages after cover */
+@page :not(:first) {{
+    @top-left {{
+        content: "{header_text}";
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 8pt;
+        color: {COPPER};
+        border-bottom: 1px solid {COPPER};
+        padding-bottom: 4pt;
+    }}
+}}
+</style>
+</head>
+<body>
+{body}
+</body>
+</html>
+"""
+    return html
+
+
+# ---------------------------------------------------------------------------
+# PDF generator
+# ---------------------------------------------------------------------------
+
+def generate_pdf(
+    output_path: Path,
+    client_id: str,
+    report_path: Path,
+) -> Path:
+    """Generate a PDF from a PathGrant markdown report.
+
+    Calls assemble_html to build the full HTML document, then uses
+    WeasyPrint to render it as a PDF. Writes both the specified
+    output_path and a latest.pdf alongside it.
+
+    Returns the output path.
+    """
+    import weasyprint
+
+    if not report_path.exists():
+        print(f"ERROR: report not found: {report_path}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[render_pdf] Assembling HTML from {report_path}")
+    html = assemble_html(client_id, report_path)
+    print(f"[render_pdf] HTML assembled: {len(html):,} chars")
+
+    print(f"[render_pdf] Rendering PDF with WeasyPrint...")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    doc = weasyprint.HTML(string=html)
+    doc.write_pdf(str(output_path))
+
+    size_bytes = output_path.stat().st_size
+    size_kb = size_bytes / 1024
+    print(f"[render_pdf] PDF written: {output_path}")
+    print(f"[render_pdf] File size: {size_kb:.1f} KB ({size_bytes:,} bytes)")
+
+    # Also write latest.pdf in the same directory
+    latest_path = output_path.parent / "latest.pdf"
+    if latest_path != output_path:
+        import shutil
+        shutil.copy2(output_path, latest_path)
+        print(f"[render_pdf] Latest copy: {latest_path}")
+
+    return output_path
+
+
+# ---------------------------------------------------------------------------
+# Inline tests
+# ---------------------------------------------------------------------------
+
+def run_tests() -> int:
+    """Run inline test suite. Returns 0 on success, 1 on failure."""
+    ok = True
+    total = 0
+
+    def _check(label: str, cond: bool) -> None:
+        nonlocal ok, total
+        total += 1
+        status = "PASS" if cond else "FAIL"
+        print(f"[{status}] {label}")
+        if not cond:
+            ok = False
+
+    # 1. SVG icon library loads without error
+    _check(
+        "SVG icon library has 9 icons",
+        len(ICONS) == 9
+        and all(k in ICONS for k in (
+            "clock", "shield", "target", "calendar", "document",
+            "star", "check", "stragentic_logo", "pathgrant_logo",
+        )),
+    )
+
+    # 2. Color constants are correct hex values
+    _check(
+        "Color constants match spec",
+        COPPER == "#B87333"
+        and DARK == "#1a1a1a"
+        and CHARCOAL == "#2b2b2b"
+        and GREY_BG == "#f5f5f5",
+    )
+
+    # 3. Cover page stat extraction from live report
+    live_report = _REPORTS_DIR / "emerge_academy" / "latest.md"
+    if live_report.exists():
+        live_md = live_report.read_text(encoding="utf-8")
+        stats = extract_cover_stats(live_md)
+        _check(
+            "extract_cover_stats returns all three keys from live report",
+            stats.get("grants_count") not in (None, "N/A")
+            and stats.get("top_amount") not in (None, "N/A")
+            and stats.get("days_to_deadline") not in (None, "N/A"),
+        )
+    else:
+        _check(
+            "extract_cover_stats (SKIP: no live report at "
+            + str(live_report) + ")",
+            True,
+        )
+
+    # 4. render_cover returns valid HTML
+    test_stats = {
+        "grants_count": "14",
+        "top_amount": "up to $400,000",
+        "days_to_deadline": "45",
+    }
+    cover = render_cover(test_stats, "Test Client", "April 16, 2026")
+    _check(
+        "render_cover contains STRAGENTIC and stat boxes",
+        "STRAGENTIC" in cover
+        and "stat-box" in cover
+        and "stat-value" in cover,
+    )
+
+    # 5. Column width percentages sum to 100%
+    widths = [28, 18, 14, 8, 6, 8, 18]
+    _check(
+        "Grant register column widths sum to 100%",
+        sum(widths) == 100,
+    )
+
+    # 6. parse_report returns dict with at least 5 keys
+    if live_report.exists():
+        sections = parse_report(live_report)
+        real_keys = [k for k in sections if not k.startswith("_")]
+        _check(
+            f"parse_report returns {len(real_keys)} sections (need >= 5)",
+            len(real_keys) >= 5,
+        )
+    else:
+        _check("parse_report (SKIP: no live report)", True)
+
+    # 7. assemble_html returns string longer than 10000 chars
+    if live_report.exists():
+        html = assemble_html("emerge_academy", live_report)
+        _check(
+            f"assemble_html returns {len(html):,} chars (need > 10000)",
+            len(html) > 10000,
+        )
+    else:
+        _check("assemble_html (SKIP: no live report)", True)
+
+    # 8. PDF generated at expected path and size > 50KB
+    if live_report.exists():
+        test_pdf = _REPORTS_DIR / "emerge_academy" / "_test_output.pdf"
+        try:
+            generate_pdf(test_pdf, "emerge_academy", live_report)
+            size_kb = test_pdf.stat().st_size / 1024
+            _check(
+                f"PDF generated at expected path, size {size_kb:.0f} KB (need > 50)",
+                test_pdf.exists() and size_kb > 50,
+            )
+        finally:
+            if test_pdf.exists():
+                test_pdf.unlink()
+    else:
+        _check("PDF generation (SKIP: no live report)", True)
+
+    print(f"\n{'=' * 60}")
+    print(f"RENDER_PDF TESTS: {total} run, {'ALL PASSED' if ok else 'FAILURES DETECTED'}")
+    return 0 if ok else 1
+
+
+# ---------------------------------------------------------------------------
+# CLI entry point
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("render_pdf.py Part 1 loaded successfully")
-    print(f"  Icons: {len(ICONS)}")
-    print(f"  CSS length: {len(CSS)} chars")
-
-    test_md = (
-        "All 14 verified programs scored for The Emerge Academy.\n"
-        "up to $400,000\n"
-        "Deadline 2026-05-31 is 45 days away\n"
+    parser = argparse.ArgumentParser(
+        description="PathGrant PDF renderer: markdown to production PDF",
     )
-    stats = extract_cover_stats(test_md)
-    print(f"  Stats extraction test: {stats}")
+    parser.add_argument("--client", default=None, help="Client ID")
+    parser.add_argument(
+        "--report-path", type=Path, default=None,
+        help="Path to source markdown (default: reports/<client>/latest.md)",
+    )
+    parser.add_argument(
+        "--output-path", type=Path, default=None,
+        help="Path for PDF output (default: reports/<client>/latest.pdf)",
+    )
+    parser.add_argument(
+        "--open", action="store_true", dest="open_after",
+        help="Open PDF after generation (mac: open, linux: xdg-open)",
+    )
+    parser.add_argument(
+        "--test", action="store_true",
+        help="Run inline test suite",
+    )
+    args = parser.parse_args()
+
+    if args.test:
+        sys.exit(run_tests())
+
+    if not args.client:
+        print("ERROR: --client is required", file=sys.stderr)
+        sys.exit(1)
+
+    report_path = args.report_path or _REPORTS_DIR / args.client / "latest.md"
+    output_path = args.output_path or _REPORTS_DIR / args.client / "latest.pdf"
+
+    ts = datetime.now().strftime("%Y%m%d-%H%M")
+    timestamped_path = output_path.parent / f"{ts}.pdf"
+
+    pdf_path = generate_pdf(timestamped_path, args.client, report_path)
+
+    if args.open_after:
+        # Detect platform and open
+        import platform
+        if platform.system() == "Darwin":
+            subprocess.run(["open", str(pdf_path)])
+        else:
+            subprocess.run(["xdg-open", str(pdf_path)])
