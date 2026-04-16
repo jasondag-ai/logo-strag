@@ -72,7 +72,6 @@
     "Explicit TRC Call to Action #92 alignment",
     "Addresses 46% vs 91% graduation rate gap for Indigenous boys in Saskatchewan",
     "Safe Sport and Respect in Sport certifications for all staff",
-    "Former Court of Kings Bench Justice as legal advisor",
     "40+ years public finance advisor"
   ],
   "team": {
@@ -82,7 +81,7 @@
     "hockey_director": "Ed Zawatsky \u2014 35+ years elite hockey",
     "hockey_advisor": "Jeff Odgers \u2014 former NHL 700+ career games",
     "cultural_advisor": "Wendall Starblanket \u2014 35+ years Indigenous leadership",
-    "legal_advisor": "Donald H. Lahy \u2014 former Court of Kings Bench Justice",
+    "legal_advisor": null,
     "business_advisor": "Jason Dagenais \u2014 engineering and governance"
   },
   "structure_note": "NFP Foundation is the grant applicant entity. For-profit OpsCo handles operations and employment. All grants evaluated against NFP parent. OpsCo may qualify separately for IRAP and Mitacs if R&D component develops in future."
