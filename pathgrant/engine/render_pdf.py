@@ -657,6 +657,360 @@ table.sources-table td:first-child {{
 
 
 # ---------------------------------------------------------------------------
+# Markdown to HTML helper
+# ---------------------------------------------------------------------------
+
+def _md_to_html(md_text: str) -> str:
+    """Convert a markdown string to HTML using the markdown library.
+
+    Uses the tables and fenced_code extensions so grant register tables
+    and code blocks render correctly.
+    """
+    import markdown as _md
+
+    return _md.markdown(
+        md_text,
+        extensions=["tables", "fenced_code"],
+        output_format="html",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Section renderers (Part 2a)
+# ---------------------------------------------------------------------------
+
+def render_cover(
+    stats: dict[str, str],
+    client_name: str,
+    report_date: str,
+) -> str:
+    """Build the cover page HTML.
+
+    Layout top to bottom, all centered:
+    1. Stragentic logo SVG (80px)
+    2. STRAGENTIC brand text
+    3. Grant Funding Analysis subtitle
+    4. Client name (large, copper)
+    5. Date line
+    6. Copper horizontal rule
+    7. Three stat boxes side by side
+    8. Powered by PathGrant line
+    9. PathGrant logo SVG (48px)
+    """
+    grants_count = stats.get("grants_count", "N/A")
+    top_amount = stats.get("top_amount", "N/A")
+    days = stats.get("days_to_deadline", "N/A")
+
+    return f"""
+<div class="cover-page">
+  <div class="cover-logo">{ICONS["stragentic_logo"]}</div>
+
+  <div class="cover-brand">STRAGENTIC</div>
+
+  <div class="cover-subtitle">Grant Funding Analysis</div>
+
+  <div class="cover-client">{client_name}</div>
+
+  <div class="cover-date">
+    Comprehensive Funding Intelligence Report &middot; {report_date}
+  </div>
+
+  <hr class="cover-rule"/>
+
+  <div class="stat-boxes">
+    <div class="stat-box">
+      <div class="stat-value">{grants_count}</div>
+      <div class="stat-label">Grants Analyzed</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value copper">{top_amount}</div>
+      <div class="stat-label">Top Funding Amount</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value copper">{days}</div>
+      <div class="stat-label">Days to Deadline</div>
+    </div>
+  </div>
+
+  <div class="cover-powered">
+    Powered by PathGrant &mdash; A Stragentic Service
+  </div>
+
+  <div class="cover-pathgrant-logo">{ICONS["pathgrant_logo"]}</div>
+</div>
+"""
+
+
+def render_alerts(content: str) -> str:
+    """Render the Alerts section with clock icon, copper left border,
+    light copper background. Boldens deadline dates found in the text."""
+    html_body = _md_to_html(content)
+
+    # Bold any date pattern like "2026-05-31" or "April 15, 2026"
+    html_body = re.sub(
+        r"(\d{4}-\d{2}-\d{2})",
+        r'<strong class="alert-date">\1</strong>',
+        html_body,
+    )
+    # Bold "N days away" phrases
+    html_body = re.sub(
+        r"(\d+ days away)",
+        r'<strong class="alert-date">\1</strong>',
+        html_body,
+    )
+    # Bold "is today"
+    html_body = html_body.replace(
+        "is today",
+        '<strong class="alert-date-urgent">is today</strong>',
+    )
+
+    icon = f'<span class="section-icon">{ICONS["clock"]}</span>'
+
+    return f"""
+<div class="alert-box">
+  <h2>{icon} Alerts: Time-Sensitive Deadlines</h2>
+  {html_body}
+</div>
+"""
+
+
+def render_grant_deep_dive(content: str) -> str:
+    """Render a full grant block with intelligence content.
+
+    Applies visual enhancements:
+    - Score badge (copper bg, white text) extracted from the ### header
+    - Deadline badge (dark bg, white text) extracted from close date
+    - Target icon on the grant header
+    - Eligibility risks in dark charcoal block with shield icon
+    - DIY steps with copper step numbers
+    - Time commitment in copper italic
+    """
+    html_body = _md_to_html(content)
+    icon_target = f'<span class="section-icon">{ICONS["target"]}</span>'
+    icon_shield = f'<span class="section-icon">{ICONS["shield"]}</span>'
+    icon_doc = f'<span class="section-icon">{ICONS["document"]}</span>'
+
+    # Inject target icon into ### Tier headers
+    html_body = re.sub(
+        r"<h3>(Tier \d+ [^<]+)</h3>",
+        rf"<h3>{icon_target}\1</h3>",
+        html_body,
+    )
+
+    # Extract and badge-ify score from "Score NN" pattern in h3
+    def _score_badge(m: re.Match) -> str:
+        before = m.group(1)
+        score = m.group(2)
+        after = m.group(3)
+        badge = f'<span class="score-badge">Score {score}</span>'
+        # Strip the "Score NN" text from the heading, put badge after
+        cleaned = re.sub(r"\*\*Score \d+\*\*\s*", "", before)
+        return f"<h3>{cleaned}{badge}{after}</h3>"
+
+    html_body = re.sub(
+        r"<h3>(.*?)\*\*Score (\d+)\*\*(.*?)</h3>",
+        _score_badge,
+        html_body,
+    )
+    # Also handle already-converted <strong>Score NN</strong>
+    html_body = re.sub(
+        r"<h3>(.*?)<strong>Score (\d+)</strong>(.*?)</h3>",
+        _score_badge,
+        html_body,
+    )
+
+    # Badge-ify "close YYYY-MM-DD" deadline references in headers
+    html_body = re.sub(
+        r"close (\d{4}-\d{2}-\d{2})",
+        r'<span class="deadline-badge">close \1</span>',
+        html_body,
+    )
+
+    # Badge-ify "rolling intake"
+    html_body = re.sub(
+        r"rolling intake",
+        r'<span class="deadline-badge">rolling intake</span>',
+        html_body,
+    )
+
+    # Tag stackable markers
+    html_body = re.sub(
+        r"stackable",
+        r'<span class="stackable-tag">stackable</span>',
+        html_body,
+        count=0,
+        flags=re.IGNORECASE,
+    )
+
+    # Wrap eligibility risk paragraphs in dark blocks
+    # Match the bold header "Eligibility risks:" through to the next bold
+    # header or end of section
+    html_body = re.sub(
+        r"(<strong>Eligibility risks:</strong>)(.*?)(?=<strong>|<h[234]|<hr|$)",
+        (
+            rf'<div class="risk-block">'
+            rf'{icon_shield} \1\2'
+            rf'</div>'
+        ),
+        html_body,
+        flags=re.DOTALL,
+    )
+
+    # Mark "HARD STOP" and "CRITICAL" in copper bold
+    html_body = re.sub(
+        r"\b(HARD STOP|CRITICAL)\b",
+        r'<span class="hard-stop">\1</span>',
+        html_body,
+    )
+
+    # Style DIY step numbers: "1." at start of list items
+    html_body = re.sub(
+        r"<li>\s*<strong>(\d+\.)",
+        r'<li><strong><span class="diy-step-number">\1</span>',
+        html_body,
+    )
+
+    # Style time commitment lines
+    html_body = re.sub(
+        r"(<h4>Time commitment</h4>\s*<p>)(.*?)(</p>)",
+        r'\1<span class="diy-time">\2</span>\3',
+        html_body,
+        flags=re.DOTALL,
+    )
+
+    # Wrap required documents with document icon
+    html_body = re.sub(
+        r"(<h4>Required documents</h4>)",
+        rf'\1<p>{icon_doc}</p>',
+        html_body,
+    )
+
+    return f'<div class="grant-block">{html_body}</div>'
+
+
+def render_grant_table(content: str) -> str:
+    """Render the Complete Grant Register as a styled HTML table.
+
+    Applies the grant-register class for locked column widths and
+    adds tier-specific row classes for score coloring.
+    """
+    html_body = _md_to_html(content)
+
+    # Add the grant-register class to the table element
+    html_body = html_body.replace("<table>", '<table class="grant-register">')
+
+    # Add tier classes to rows based on score value in the 4th column.
+    # Parse each <tr> that has <td> cells, read the score, tag accordingly.
+    def _tag_tier_row(m: re.Match) -> str:
+        row_html = m.group(0)
+        # Extract score from the 4th <td>
+        tds = re.findall(r"<td>(.*?)</td>", row_html)
+        if len(tds) >= 4:
+            try:
+                score = int(tds[3].strip())
+                if score >= 60:
+                    return row_html.replace("<tr>", '<tr class="tier-1">')
+                elif score >= 30:
+                    return row_html.replace("<tr>", '<tr class="tier-2">')
+                else:
+                    return row_html.replace("<tr>", '<tr class="tier-3">')
+            except ValueError:
+                pass
+        return row_html
+
+    html_body = re.sub(r"<tr>\s*<td>.*?</tr>", _tag_tier_row, html_body, flags=re.DOTALL)
+
+    return html_body
+
+
+def render_90_day_plan(content: str) -> str:
+    """Render the 90-Day Action Plan with copper phase headers and
+    calendar icons. Owner names rendered in copper italic."""
+    html_body = _md_to_html(content)
+    icon = f'<span class="section-icon">{ICONS["calendar"]}</span>'
+
+    # Convert ### phase headers to copper-background phase blocks
+    html_body = re.sub(
+        r"<h3>(Weeks? [\d\-–]+)</h3>",
+        rf'<div class="phase-header">{icon} \1</div>',
+        html_body,
+    )
+    html_body = re.sub(
+        r"<h3>(Decision gates)</h3>",
+        rf'<div class="phase-header">{icon} \1</div>',
+        html_body,
+    )
+    html_body = re.sub(
+        r"<h3>(Responsible parties)</h3>",
+        rf'<div class="phase-header">{icon} \1</div>',
+        html_body,
+    )
+
+    # Style owner names: **Role Name** at start of bullet points
+    # Make the bold role text copper italic
+    html_body = re.sub(
+        r"<strong>(Founder[^<]*?|Financial Advisor[^<]*?|Cultural Advisor[^<]*?"
+        r"|Legal Advisor[^<]*?|Educational Consultant[^<]*?"
+        r"|Hockey Director[^<]*?|Hockey Advisor[^<]*?"
+        r"|Business Advisor[^<]*?|Writing lead[^<]*?)</strong>",
+        r'<strong style="color: #B87333; font-style: italic;">\1</strong>',
+        html_body,
+    )
+
+    return html_body
+
+
+def render_engagement_options(content: str) -> str:
+    """Render Engagement Options with recommended option highlighted.
+
+    Option C (recommended) gets copper border + star icon + RECOMMENDED badge.
+    Other options get charcoal border.
+    """
+    html_body = _md_to_html(content)
+    icon_star = f'<span class="section-icon">{ICONS["star"]}</span>'
+
+    # Find the recommended option block (contains the star emoji or "Recommended")
+    # and wrap it in the recommended card class
+    html_body = re.sub(
+        r"(<h3>)(.*?Recommended.*?)(</h3>)(.*?)(?=<h3>|<h2>|<strong>Why Option|$)",
+        (
+            rf'<div class="option-card recommended">'
+            rf'<div class="recommended-badge">{icon_star} RECOMMENDED</div>'
+            rf'\1\2\3\4</div>'
+        ),
+        html_body,
+        flags=re.DOTALL,
+    )
+
+    # Wrap non-recommended option blocks
+    # Match h3 headers for Option A and Option B
+    html_body = re.sub(
+        r"(<h3>(?:Option [AB][^<]*?)</h3>)(.*?)(?=<h3>|<div class=\"option-card|<strong>Why Option|<strong>ROI|$)",
+        r'<div class="option-card">\1\2</div>',
+        html_body,
+        flags=re.DOTALL,
+    )
+
+    return html_body
+
+
+def render_sources_table(content: str) -> str:
+    """Render the Sources table with compact styling."""
+    html_body = _md_to_html(content)
+    html_body = html_body.replace("<table>", '<table class="sources-table">')
+    return html_body
+
+
+def render_generic_section(content: str) -> str:
+    """Fallback renderer: convert markdown to HTML, preserve structure.
+
+    Used for sections without special visual treatment (Client Snapshot,
+    Research Queue, Advisory Notes, Methodology, etc.).
+    """
+    return _md_to_html(content)
+
+
+# ---------------------------------------------------------------------------
 # Module-level verification: importable without side effects
 # ---------------------------------------------------------------------------
 
