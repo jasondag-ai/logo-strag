@@ -296,6 +296,7 @@ def print_summary(
     intel_elapsed: float,
     reporter_elapsed: float,
     dry_run: bool,
+    skip_intelligence: bool = False,
 ) -> None:
     """Print a compact run summary block."""
     failure_count = count_api_failures(intel)
@@ -333,10 +334,20 @@ def print_summary(
     else:
         print("  Intelligence:    (not generated)")
 
-    print(f"  API calls:       {api_calls_total}")
     if dry_run:
-        print("  Cost:            $0.0000 (dry run, no calls made)")
+        print(f"  API calls:       0 (dry run, no calls made)")
+        print(f"  Cost:            $0.0000 (dry run, no calls made)")
+    elif skip_intelligence:
+        print(
+            f"  API calls:       {api_calls_total} "
+            f"(from cached intelligence, this run 0)"
+        )
+        print(
+            f"  Cost:            ${cost_usd:.4f} "
+            f"(from cached intelligence, this run $0.0000)"
+        )
     else:
+        print(f"  API calls:       {api_calls_total}")
         print(f"  Cost:            ${cost_usd:.4f}")
 
     print(
@@ -534,6 +545,7 @@ def main() -> int:
         intel_elapsed=intel_elapsed,
         reporter_elapsed=reporter_elapsed,
         dry_run=args.dry_run,
+        skip_intelligence=args.skip_intelligence,
     )
 
     return 0
