@@ -141,7 +141,6 @@ def _format_grant_block(
     result: dict[str, Any],
     grant_lookup: dict[str, Any],
     *,
-    signal_limit: int = 3,
     intelligence: dict[str, Any] | None = None,
 ) -> str:
     """Tight grant block for the ranked sections.
@@ -191,11 +190,11 @@ def _format_grant_block(
         lines.append(amount)
     lines.append("")
 
-    # Top signals (max signal_limit)
+    # Signals (complete list so score math is transparent)
     signals = result.get("signals") or []
     if signals:
-        lines.append("**Top signals:**")
-        for s in signals[:signal_limit]:
+        lines.append("**Signals:**")
+        for s in signals:
             lines.append(f"- {s['points']:+d} {s['label']}")
         lines.append("")
 
